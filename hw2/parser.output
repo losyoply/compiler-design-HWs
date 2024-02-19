@@ -1,0 +1,3666 @@
+Terminals unused in grammar
+
+   NUL
+
+
+文法
+
+    0 $accept: programs $end
+
+    1 programs: programs program
+    2         | program
+
+    3 program: fn_def
+    4        | fn_decl
+    5        | const_decl
+    6        | array_decl
+    7        | scalar_decl
+
+    8 stmts: stmts stmt
+    9      | stmt
+
+   10 stmt: stmt_expr
+   11     | stmt_if
+   12     | stmt_switch
+   13     | stmt_while
+   14     | stmt_for
+   15     | RET expr SEMICOLON
+   16     | RET SEMICOLON
+   17     | BREAK SEMICOLON
+   18     | CONTINUE SEMICOLON
+   19     | var_decl
+   20     | comp_stmt
+
+   21 comp_stmt: L_CURV stmts R_CURV
+   22          | L_CURV R_CURV
+
+   23 stmt_expr: expr SEMICOLON
+
+   24 stmt_if: IF L_PARA expr R_PARA comp_stmt ELSE comp_stmt
+   25        | IF L_PARA expr R_PARA comp_stmt
+
+   26 stmt_switch: SWITCH L_PARA expr R_PARA L_CURV swth_clauses R_CURV
+   27            | SWITCH L_PARA expr R_PARA L_CURV R_CURV
+
+   28 swth_clauses: swth_clauses swth_clause
+   29             | swth_clause
+
+   30 swth_clause: CASE expr COLON stmts
+   31            | CASE expr COLON
+   32            | DEFAULT COLON stmts
+   33            | DEFAULT COLON
+
+   34 stmt_while: WHILE L_PARA expr R_PARA stmt
+   35           | DO stmt WHILE L_PARA expr R_PARA SEMICOLON
+
+   36 stmt_for: FOR L_PARA for_ctnt R_PARA stmt
+
+   37 for_ctnt: expr_ SEMICOLON expr_ SEMICOLON expr_
+
+   38 expr_: expr
+   39      | /* 空白 */
+
+   40 var_decl: const_decl
+   41         | array_decl
+   42         | scalar_decl
+
+   43 fn_def: TYPE fn_head comp_stmt
+   44       | VOID fn_head comp_stmt
+
+   45 fn_decl: TYPE fn_head SEMICOLON
+   46        | VOID fn_head SEMICOLON
+
+   47 fn_head: ID L_PARA fn_params R_PARA
+   48        | MUL ID L_PARA fn_params R_PARA
+
+   49 fn_params: fn_params COMMA fn_param
+   50          | fn_param
+   51          | /* 空白 */
+
+   52 fn_param: TYPE ID
+
+   53 const_decl: CONST TYPE const_idents SEMICOLON
+
+   54 const_idents: const_idents COMMA const_ident
+   55             | const_ident
+
+   56 const_ident: ID ASSIGN expr
+
+   57 array_decl: TYPE arrays SEMICOLON
+
+   58 arrays: arrays COMMA array_init
+   59       | array_init
+
+   60 array_init: array ASSIGN arr_ctnt
+   61           | array
+
+   62 array: ID arr_brkts
+
+   63 arr_brkts: arr_brkts arr_brkt
+   64          | arr_brkt
+
+   65 arr_brkt: L_BRKT expr R_BRKT
+
+   66 arr_ctnts: arr_ctnts COMMA arr_ctnt
+   67          | arr_ctnt
+
+   68 arr_ctnt: L_CURV arr_ctnts R_CURV
+   69         | expr
+
+   70 scalar_decl: TYPE idents SEMICOLON
+
+   71 idents: idents COMMA ident_init
+   72       | ident_init
+
+   73 ident_init: ID ASSIGN expr
+   74           | ID
+   75           | MUL ID
+
+   76 expr: VAR ASSIGN expr
+   77     | e_logic_or
+
+   78 e_logic_or: e_logic_or LOGIC_OR e_logic_and
+   79           | e_logic_and
+
+   80 e_logic_and: e_logic_and LOGIC_AND e_bitwise_or
+   81            | e_bitwise_or
+
+   82 e_bitwise_or: e_bitwise_or BITWISE_OR e_bitwise_and
+   83             | e_bitwise_and
+
+   84 e_bitwise_and: e_bitwise_and BITWISE_AND e_equal
+   85              | e_equal
+   86              | BITWISE_AND e_equal
+
+   87 e_equal: e_equal EQUAL e_greater
+   88        | e_equal N_EQUAL e_greater
+   89        | e_greater
+
+   90 e_greater: e_greater GREATER e_add_sub
+   91          | e_greater G_EQUAL e_add_sub
+   92          | e_greater LESS e_add_sub
+   93          | e_greater L_EQUAL e_add_sub
+   94          | e_add_sub
+
+   95 e_add_sub: e_add_sub plus_minus e_mul_div_mod
+   96          | e_mul_div_mod
+
+   97 e_mul_div_mod: e_mul_div_mod mul_div_mod e_unary
+   98              | e_unary
+
+   99 e_unary: NEG e_unary
+  100        | plus_minus e_unary
+  101        | inc_dec VAR
+  102        | e_top
+
+  103 e_top: VAR inc_dec
+  104      | call_fn
+  105      | VAR
+  106      | LITER
+  107      | L_PARA expr R_PARA
+
+  108 plus_minus: PLUS
+  109           | MINUS
+
+  110 mul_div_mod: MUL
+  111            | DIV
+  112            | MOD
+
+  113 inc_dec: INC
+  114        | DEC
+  115        | OP
+
+  116 call_fn: VAR L_PARA params R_PARA
+
+  117 params: params COMMA expr
+  118       | expr
+  119       | /* 空白 */
+
+  120 VAR: ID brkts_e
+  121    | ID
+
+  122 LITER: INTEGER
+  123      | DOUBLE
+  124      | CHAR
+  125      | STRING
+
+  126 brkts_e: brkts_e brkt_e
+  127        | brkt_e
+
+  128 brkt_e: L_BRKT expr R_BRKT
+
+
+終結語詞，附有它們出現處的規則
+
+$end (0) 0
+error (256)
+OP (258) 115
+NUL (259)
+BREAK (260) 17
+CONTINUE (261) 18
+RET (262) 15 16
+FOR (263) 36
+DO (264) 35
+WHILE (265) 34 35
+SWITCH (266) 26 27
+CASE (267) 30 31
+DEFAULT (268) 32 33
+VOID (269) 44 46
+TYPE (270) 43 45 52 53 57 70
+ID (271) 47 48 52 56 62 73 74 75 120 121
+CHAR (272) 124
+STRING (273) 125
+CONST (274) 53
+COMMA (275) 49 54 58 66 71 117
+SEMICOLON (276) 15 16 17 18 23 35 37 45 46 53 57 70
+COLON (277) 30 31 32 33
+LOGIC_OR (278) 78
+LOGIC_AND (279) 80
+BITWISE_OR (280) 82
+BITWISE_AND (281) 84 86
+EQUAL (282) 87
+N_EQUAL (283) 88
+G_EQUAL (284) 91
+L_EQUAL (285) 93
+GREATER (286) 90
+LESS (287) 92
+MINUS (288) 109
+PLUS (289) 108
+MUL (290) 48 75 110
+DIV (291) 111
+MOD (292) 112
+NEG (293) 99
+INC (294) 113
+DEC (295) 114
+L_BRKT (296) 65 128
+R_BRKT (297) 65 128
+L_CURV (298) 21 22 26 27 68
+R_CURV (299) 21 22 26 27 68
+L_PARA (300) 24 25 26 27 34 35 36 47 48 107 116
+R_PARA (301) 24 25 26 27 34 35 36 47 48 107 116
+IF (302) 24 25
+ELSE (303) 24
+ASSIGN (304) 56 60 73 76
+INTEGER (305) 122
+DOUBLE (306) 123
+
+
+非終結語詞，附有它們出現處的規則
+
+$accept (52)
+   於左側： 0
+programs (53)
+   於左側： 1 2,於右側： 0 1
+program (54)
+   於左側： 3 4 5 6 7,於右側： 1 2
+stmts (55)
+   於左側： 8 9,於右側： 8 21 30 32
+stmt (56)
+   於左側： 10 11 12 13 14 15 16 17 18 19 20,於右側： 8 9 34 35 36
+comp_stmt (57)
+   於左側： 21 22,於右側： 20 24 25 43 44
+stmt_expr (58)
+   於左側： 23,於右側： 10
+stmt_if (59)
+   於左側： 24 25,於右側： 11
+stmt_switch (60)
+   於左側： 26 27,於右側： 12
+swth_clauses (61)
+   於左側： 28 29,於右側： 26 28
+swth_clause (62)
+   於左側： 30 31 32 33,於右側： 28 29
+stmt_while (63)
+   於左側： 34 35,於右側： 13
+stmt_for (64)
+   於左側： 36,於右側： 14
+for_ctnt (65)
+   於左側： 37,於右側： 36
+expr_ (66)
+   於左側： 38 39,於右側： 37
+var_decl (67)
+   於左側： 40 41 42,於右側： 19
+fn_def (68)
+   於左側： 43 44,於右側： 3
+fn_decl (69)
+   於左側： 45 46,於右側： 4
+fn_head (70)
+   於左側： 47 48,於右側： 43 44 45 46
+fn_params (71)
+   於左側： 49 50 51,於右側： 47 48 49
+fn_param (72)
+   於左側： 52,於右側： 49 50
+const_decl (73)
+   於左側： 53,於右側： 5 40
+const_idents (74)
+   於左側： 54 55,於右側： 53 54
+const_ident (75)
+   於左側： 56,於右側： 54 55
+array_decl (76)
+   於左側： 57,於右側： 6 41
+arrays (77)
+   於左側： 58 59,於右側： 57 58
+array_init (78)
+   於左側： 60 61,於右側： 58 59
+array (79)
+   於左側： 62,於右側： 60 61
+arr_brkts (80)
+   於左側： 63 64,於右側： 62 63
+arr_brkt (81)
+   於左側： 65,於右側： 63 64
+arr_ctnts (82)
+   於左側： 66 67,於右側： 66 68
+arr_ctnt (83)
+   於左側： 68 69,於右側： 60 66 67
+scalar_decl (84)
+   於左側： 70,於右側： 7 42
+idents (85)
+   於左側： 71 72,於右側： 70 71
+ident_init (86)
+   於左側： 73 74 75,於右側： 71 72
+expr (87)
+   於左側： 76 77,於右側： 15 23 24 25 26 27 30 31 34 35 38 56 65 69
+    73 76 107 117 118 128
+e_logic_or (88)
+   於左側： 78 79,於右側： 77 78
+e_logic_and (89)
+   於左側： 80 81,於右側： 78 79 80
+e_bitwise_or (90)
+   於左側： 82 83,於右側： 80 81 82
+e_bitwise_and (91)
+   於左側： 84 85 86,於右側： 82 83 84
+e_equal (92)
+   於左側： 87 88 89,於右側： 84 85 86 87 88
+e_greater (93)
+   於左側： 90 91 92 93 94,於右側： 87 88 89 90 91 92 93
+e_add_sub (94)
+   於左側： 95 96,於右側： 90 91 92 93 94 95
+e_mul_div_mod (95)
+   於左側： 97 98,於右側： 95 96 97
+e_unary (96)
+   於左側： 99 100 101 102,於右側： 97 98 99 100
+e_top (97)
+   於左側： 103 104 105 106 107,於右側： 102
+plus_minus (98)
+   於左側： 108 109,於右側： 95 100
+mul_div_mod (99)
+   於左側： 110 111 112,於右側： 97
+inc_dec (100)
+   於左側： 113 114 115,於右側： 101 103
+call_fn (101)
+   於左側： 116,於右側： 104
+params (102)
+   於左側： 117 118 119,於右側： 116 117
+VAR (103)
+   於左側： 120 121,於右側： 76 101 103 105 116
+LITER (104)
+   於左側： 122 123 124 125,於右側： 106
+brkts_e (105)
+   於左側： 126 127,於右側： 120 126
+brkt_e (106)
+   於左側： 128,於右側： 126 127
+
+
+狀態 0
+
+    0 $accept: . programs $end
+
+    VOID   偏移，並進入狀態 1
+    TYPE   偏移，並進入狀態 2
+    CONST  偏移，並進入狀態 3
+
+    programs     進入狀態 4
+    program      進入狀態 5
+    fn_def       進入狀態 6
+    fn_decl      進入狀態 7
+    const_decl   進入狀態 8
+    array_decl   進入狀態 9
+    scalar_decl  進入狀態 10
+
+
+狀態 1
+
+   44 fn_def: VOID . fn_head comp_stmt
+   46 fn_decl: VOID . fn_head SEMICOLON
+
+    ID   偏移，並進入狀態 11
+    MUL  偏移，並進入狀態 12
+
+    fn_head  進入狀態 13
+
+
+狀態 2
+
+   43 fn_def: TYPE . fn_head comp_stmt
+   45 fn_decl: TYPE . fn_head SEMICOLON
+   57 array_decl: TYPE . arrays SEMICOLON
+   70 scalar_decl: TYPE . idents SEMICOLON
+
+    ID   偏移，並進入狀態 14
+    MUL  偏移，並進入狀態 15
+
+    fn_head     進入狀態 16
+    arrays      進入狀態 17
+    array_init  進入狀態 18
+    array       進入狀態 19
+    idents      進入狀態 20
+    ident_init  進入狀態 21
+
+
+狀態 3
+
+   53 const_decl: CONST . TYPE const_idents SEMICOLON
+
+    TYPE  偏移，並進入狀態 22
+
+
+狀態 4
+
+    0 $accept: programs . $end
+    1 programs: programs . program
+
+    $end   偏移，並進入狀態 23
+    VOID   偏移，並進入狀態 1
+    TYPE   偏移，並進入狀態 2
+    CONST  偏移，並進入狀態 3
+
+    program      進入狀態 24
+    fn_def       進入狀態 6
+    fn_decl      進入狀態 7
+    const_decl   進入狀態 8
+    array_decl   進入狀態 9
+    scalar_decl  進入狀態 10
+
+
+狀態 5
+
+    2 programs: program .
+
+    $預設  使用規則 2 以縮減 (programs)
+
+
+狀態 6
+
+    3 program: fn_def .
+
+    $預設  使用規則 3 以縮減 (program)
+
+
+狀態 7
+
+    4 program: fn_decl .
+
+    $預設  使用規則 4 以縮減 (program)
+
+
+狀態 8
+
+    5 program: const_decl .
+
+    $預設  使用規則 5 以縮減 (program)
+
+
+狀態 9
+
+    6 program: array_decl .
+
+    $預設  使用規則 6 以縮減 (program)
+
+
+狀態 10
+
+    7 program: scalar_decl .
+
+    $預設  使用規則 7 以縮減 (program)
+
+
+狀態 11
+
+   47 fn_head: ID . L_PARA fn_params R_PARA
+
+    L_PARA  偏移，並進入狀態 25
+
+
+狀態 12
+
+   48 fn_head: MUL . ID L_PARA fn_params R_PARA
+
+    ID  偏移，並進入狀態 26
+
+
+狀態 13
+
+   44 fn_def: VOID fn_head . comp_stmt
+   46 fn_decl: VOID fn_head . SEMICOLON
+
+    SEMICOLON  偏移，並進入狀態 27
+    L_CURV     偏移，並進入狀態 28
+
+    comp_stmt  進入狀態 29
+
+
+狀態 14
+
+   47 fn_head: ID . L_PARA fn_params R_PARA
+   62 array: ID . arr_brkts
+   73 ident_init: ID . ASSIGN expr
+   74           | ID .
+
+    L_BRKT  偏移，並進入狀態 30
+    L_PARA  偏移，並進入狀態 25
+    ASSIGN  偏移，並進入狀態 31
+
+    $預設  使用規則 74 以縮減 (ident_init)
+
+    arr_brkts  進入狀態 32
+    arr_brkt   進入狀態 33
+
+
+狀態 15
+
+   48 fn_head: MUL . ID L_PARA fn_params R_PARA
+   75 ident_init: MUL . ID
+
+    ID  偏移，並進入狀態 34
+
+
+狀態 16
+
+   43 fn_def: TYPE fn_head . comp_stmt
+   45 fn_decl: TYPE fn_head . SEMICOLON
+
+    SEMICOLON  偏移，並進入狀態 35
+    L_CURV     偏移，並進入狀態 28
+
+    comp_stmt  進入狀態 36
+
+
+狀態 17
+
+   57 array_decl: TYPE arrays . SEMICOLON
+   58 arrays: arrays . COMMA array_init
+
+    COMMA      偏移，並進入狀態 37
+    SEMICOLON  偏移，並進入狀態 38
+
+
+狀態 18
+
+   59 arrays: array_init .
+
+    $預設  使用規則 59 以縮減 (arrays)
+
+
+狀態 19
+
+   60 array_init: array . ASSIGN arr_ctnt
+   61           | array .
+
+    ASSIGN  偏移，並進入狀態 39
+
+    $預設  使用規則 61 以縮減 (array_init)
+
+
+狀態 20
+
+   70 scalar_decl: TYPE idents . SEMICOLON
+   71 idents: idents . COMMA ident_init
+
+    COMMA      偏移，並進入狀態 40
+    SEMICOLON  偏移，並進入狀態 41
+
+
+狀態 21
+
+   72 idents: ident_init .
+
+    $預設  使用規則 72 以縮減 (idents)
+
+
+狀態 22
+
+   53 const_decl: CONST TYPE . const_idents SEMICOLON
+
+    ID  偏移，並進入狀態 42
+
+    const_idents  進入狀態 43
+    const_ident   進入狀態 44
+
+
+狀態 23
+
+    0 $accept: programs $end .
+
+    $預設  接受
+
+
+狀態 24
+
+    1 programs: programs program .
+
+    $預設  使用規則 1 以縮減 (programs)
+
+
+狀態 25
+
+   47 fn_head: ID L_PARA . fn_params R_PARA
+
+    TYPE  偏移，並進入狀態 45
+
+    $預設  使用規則 51 以縮減 (fn_params)
+
+    fn_params  進入狀態 46
+    fn_param   進入狀態 47
+
+
+狀態 26
+
+   48 fn_head: MUL ID . L_PARA fn_params R_PARA
+
+    L_PARA  偏移，並進入狀態 48
+
+
+狀態 27
+
+   46 fn_decl: VOID fn_head SEMICOLON .
+
+    $預設  使用規則 46 以縮減 (fn_decl)
+
+
+狀態 28
+
+   21 comp_stmt: L_CURV . stmts R_CURV
+   22          | L_CURV . R_CURV
+
+    OP           偏移，並進入狀態 49
+    BREAK        偏移，並進入狀態 50
+    CONTINUE     偏移，並進入狀態 51
+    RET          偏移，並進入狀態 52
+    FOR          偏移，並進入狀態 53
+    DO           偏移，並進入狀態 54
+    WHILE        偏移，並進入狀態 55
+    SWITCH       偏移，並進入狀態 56
+    TYPE         偏移，並進入狀態 57
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    CONST        偏移，並進入狀態 3
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_CURV       偏移，並進入狀態 28
+    R_CURV       偏移，並進入狀態 67
+    L_PARA       偏移，並進入狀態 68
+    IF           偏移，並進入狀態 69
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    stmts          進入狀態 72
+    stmt           進入狀態 73
+    comp_stmt      進入狀態 74
+    stmt_expr      進入狀態 75
+    stmt_if        進入狀態 76
+    stmt_switch    進入狀態 77
+    stmt_while     進入狀態 78
+    stmt_for       進入狀態 79
+    var_decl       進入狀態 80
+    const_decl     進入狀態 81
+    array_decl     進入狀態 82
+    scalar_decl    進入狀態 83
+    expr           進入狀態 84
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 29
+
+   44 fn_def: VOID fn_head comp_stmt .
+
+    $預設  使用規則 44 以縮減 (fn_def)
+
+
+狀態 30
+
+   65 arr_brkt: L_BRKT . expr R_BRKT
+
+    OP           偏移，並進入狀態 49
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_PARA       偏移，並進入狀態 68
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    expr           進入狀態 100
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 31
+
+   73 ident_init: ID ASSIGN . expr
+
+    OP           偏移，並進入狀態 49
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_PARA       偏移，並進入狀態 68
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    expr           進入狀態 101
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 32
+
+   62 array: ID arr_brkts .
+   63 arr_brkts: arr_brkts . arr_brkt
+
+    L_BRKT  偏移，並進入狀態 30
+
+    $預設  使用規則 62 以縮減 (array)
+
+    arr_brkt  進入狀態 102
+
+
+狀態 33
+
+   64 arr_brkts: arr_brkt .
+
+    $預設  使用規則 64 以縮減 (arr_brkts)
+
+
+狀態 34
+
+   48 fn_head: MUL ID . L_PARA fn_params R_PARA
+   75 ident_init: MUL ID .
+
+    L_PARA  偏移，並進入狀態 48
+
+    $預設  使用規則 75 以縮減 (ident_init)
+
+
+狀態 35
+
+   45 fn_decl: TYPE fn_head SEMICOLON .
+
+    $預設  使用規則 45 以縮減 (fn_decl)
+
+
+狀態 36
+
+   43 fn_def: TYPE fn_head comp_stmt .
+
+    $預設  使用規則 43 以縮減 (fn_def)
+
+
+狀態 37
+
+   58 arrays: arrays COMMA . array_init
+
+    ID  偏移，並進入狀態 103
+
+    array_init  進入狀態 104
+    array       進入狀態 19
+
+
+狀態 38
+
+   57 array_decl: TYPE arrays SEMICOLON .
+
+    $預設  使用規則 57 以縮減 (array_decl)
+
+
+狀態 39
+
+   60 array_init: array ASSIGN . arr_ctnt
+
+    OP           偏移，並進入狀態 49
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_CURV       偏移，並進入狀態 105
+    L_PARA       偏移，並進入狀態 68
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    arr_ctnt       進入狀態 106
+    expr           進入狀態 107
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 40
+
+   71 idents: idents COMMA . ident_init
+
+    ID   偏移，並進入狀態 108
+    MUL  偏移，並進入狀態 109
+
+    ident_init  進入狀態 110
+
+
+狀態 41
+
+   70 scalar_decl: TYPE idents SEMICOLON .
+
+    $預設  使用規則 70 以縮減 (scalar_decl)
+
+
+狀態 42
+
+   56 const_ident: ID . ASSIGN expr
+
+    ASSIGN  偏移，並進入狀態 111
+
+
+狀態 43
+
+   53 const_decl: CONST TYPE const_idents . SEMICOLON
+   54 const_idents: const_idents . COMMA const_ident
+
+    COMMA      偏移，並進入狀態 112
+    SEMICOLON  偏移，並進入狀態 113
+
+
+狀態 44
+
+   55 const_idents: const_ident .
+
+    $預設  使用規則 55 以縮減 (const_idents)
+
+
+狀態 45
+
+   52 fn_param: TYPE . ID
+
+    ID  偏移，並進入狀態 114
+
+
+狀態 46
+
+   47 fn_head: ID L_PARA fn_params . R_PARA
+   49 fn_params: fn_params . COMMA fn_param
+
+    COMMA   偏移，並進入狀態 115
+    R_PARA  偏移，並進入狀態 116
+
+
+狀態 47
+
+   50 fn_params: fn_param .
+
+    $預設  使用規則 50 以縮減 (fn_params)
+
+
+狀態 48
+
+   48 fn_head: MUL ID L_PARA . fn_params R_PARA
+
+    TYPE  偏移，並進入狀態 45
+
+    $預設  使用規則 51 以縮減 (fn_params)
+
+    fn_params  進入狀態 117
+    fn_param   進入狀態 47
+
+
+狀態 49
+
+  115 inc_dec: OP .
+
+    $預設  使用規則 115 以縮減 (inc_dec)
+
+
+狀態 50
+
+   17 stmt: BREAK . SEMICOLON
+
+    SEMICOLON  偏移，並進入狀態 118
+
+
+狀態 51
+
+   18 stmt: CONTINUE . SEMICOLON
+
+    SEMICOLON  偏移，並進入狀態 119
+
+
+狀態 52
+
+   15 stmt: RET . expr SEMICOLON
+   16     | RET . SEMICOLON
+
+    OP           偏移，並進入狀態 49
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    SEMICOLON    偏移，並進入狀態 120
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_PARA       偏移，並進入狀態 68
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    expr           進入狀態 121
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 53
+
+   36 stmt_for: FOR . L_PARA for_ctnt R_PARA stmt
+
+    L_PARA  偏移，並進入狀態 122
+
+
+狀態 54
+
+   35 stmt_while: DO . stmt WHILE L_PARA expr R_PARA SEMICOLON
+
+    OP           偏移，並進入狀態 49
+    BREAK        偏移，並進入狀態 50
+    CONTINUE     偏移，並進入狀態 51
+    RET          偏移，並進入狀態 52
+    FOR          偏移，並進入狀態 53
+    DO           偏移，並進入狀態 54
+    WHILE        偏移，並進入狀態 55
+    SWITCH       偏移，並進入狀態 56
+    TYPE         偏移，並進入狀態 57
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    CONST        偏移，並進入狀態 3
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_CURV       偏移，並進入狀態 28
+    L_PARA       偏移，並進入狀態 68
+    IF           偏移，並進入狀態 69
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    stmt           進入狀態 123
+    comp_stmt      進入狀態 74
+    stmt_expr      進入狀態 75
+    stmt_if        進入狀態 76
+    stmt_switch    進入狀態 77
+    stmt_while     進入狀態 78
+    stmt_for       進入狀態 79
+    var_decl       進入狀態 80
+    const_decl     進入狀態 81
+    array_decl     進入狀態 82
+    scalar_decl    進入狀態 83
+    expr           進入狀態 84
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 55
+
+   34 stmt_while: WHILE . L_PARA expr R_PARA stmt
+
+    L_PARA  偏移，並進入狀態 124
+
+
+狀態 56
+
+   26 stmt_switch: SWITCH . L_PARA expr R_PARA L_CURV swth_clauses R_CURV
+   27            | SWITCH . L_PARA expr R_PARA L_CURV R_CURV
+
+    L_PARA  偏移，並進入狀態 125
+
+
+狀態 57
+
+   57 array_decl: TYPE . arrays SEMICOLON
+   70 scalar_decl: TYPE . idents SEMICOLON
+
+    ID   偏移，並進入狀態 126
+    MUL  偏移，並進入狀態 109
+
+    arrays      進入狀態 17
+    array_init  進入狀態 18
+    array       進入狀態 19
+    idents      進入狀態 20
+    ident_init  進入狀態 21
+
+
+狀態 58
+
+  120 VAR: ID . brkts_e
+  121    | ID .
+
+    L_BRKT  偏移，並進入狀態 127
+
+    $預設  使用規則 121 以縮減 (VAR)
+
+    brkts_e  進入狀態 128
+    brkt_e   進入狀態 129
+
+
+狀態 59
+
+  124 LITER: CHAR .
+
+    $預設  使用規則 124 以縮減 (LITER)
+
+
+狀態 60
+
+  125 LITER: STRING .
+
+    $預設  使用規則 125 以縮減 (LITER)
+
+
+狀態 61
+
+   86 e_bitwise_and: BITWISE_AND . e_equal
+
+    OP       偏移，並進入狀態 49
+    ID       偏移，並進入狀態 58
+    CHAR     偏移，並進入狀態 59
+    STRING   偏移，並進入狀態 60
+    MINUS    偏移，並進入狀態 62
+    PLUS     偏移，並進入狀態 63
+    NEG      偏移，並進入狀態 64
+    INC      偏移，並進入狀態 65
+    DEC      偏移，並進入狀態 66
+    L_PARA   偏移，並進入狀態 68
+    INTEGER  偏移，並進入狀態 70
+    DOUBLE   偏移，並進入狀態 71
+
+    e_equal        進入狀態 130
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 131
+    LITER          進入狀態 99
+
+
+狀態 62
+
+  109 plus_minus: MINUS .
+
+    $預設  使用規則 109 以縮減 (plus_minus)
+
+
+狀態 63
+
+  108 plus_minus: PLUS .
+
+    $預設  使用規則 108 以縮減 (plus_minus)
+
+
+狀態 64
+
+   99 e_unary: NEG . e_unary
+
+    OP       偏移，並進入狀態 49
+    ID       偏移，並進入狀態 58
+    CHAR     偏移，並進入狀態 59
+    STRING   偏移，並進入狀態 60
+    MINUS    偏移，並進入狀態 62
+    PLUS     偏移，並進入狀態 63
+    NEG      偏移，並進入狀態 64
+    INC      偏移，並進入狀態 65
+    DEC      偏移，並進入狀態 66
+    L_PARA   偏移，並進入狀態 68
+    INTEGER  偏移，並進入狀態 70
+    DOUBLE   偏移，並進入狀態 71
+
+    e_unary     進入狀態 132
+    e_top       進入狀態 94
+    plus_minus  進入狀態 95
+    inc_dec     進入狀態 96
+    call_fn     進入狀態 97
+    VAR         進入狀態 131
+    LITER       進入狀態 99
+
+
+狀態 65
+
+  113 inc_dec: INC .
+
+    $預設  使用規則 113 以縮減 (inc_dec)
+
+
+狀態 66
+
+  114 inc_dec: DEC .
+
+    $預設  使用規則 114 以縮減 (inc_dec)
+
+
+狀態 67
+
+   22 comp_stmt: L_CURV R_CURV .
+
+    $預設  使用規則 22 以縮減 (comp_stmt)
+
+
+狀態 68
+
+  107 e_top: L_PARA . expr R_PARA
+
+    OP           偏移，並進入狀態 49
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_PARA       偏移，並進入狀態 68
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    expr           進入狀態 133
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 69
+
+   24 stmt_if: IF . L_PARA expr R_PARA comp_stmt ELSE comp_stmt
+   25        | IF . L_PARA expr R_PARA comp_stmt
+
+    L_PARA  偏移，並進入狀態 134
+
+
+狀態 70
+
+  122 LITER: INTEGER .
+
+    $預設  使用規則 122 以縮減 (LITER)
+
+
+狀態 71
+
+  123 LITER: DOUBLE .
+
+    $預設  使用規則 123 以縮減 (LITER)
+
+
+狀態 72
+
+    8 stmts: stmts . stmt
+   21 comp_stmt: L_CURV stmts . R_CURV
+
+    OP           偏移，並進入狀態 49
+    BREAK        偏移，並進入狀態 50
+    CONTINUE     偏移，並進入狀態 51
+    RET          偏移，並進入狀態 52
+    FOR          偏移，並進入狀態 53
+    DO           偏移，並進入狀態 54
+    WHILE        偏移，並進入狀態 55
+    SWITCH       偏移，並進入狀態 56
+    TYPE         偏移，並進入狀態 57
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    CONST        偏移，並進入狀態 3
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_CURV       偏移，並進入狀態 28
+    R_CURV       偏移，並進入狀態 135
+    L_PARA       偏移，並進入狀態 68
+    IF           偏移，並進入狀態 69
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    stmt           進入狀態 136
+    comp_stmt      進入狀態 74
+    stmt_expr      進入狀態 75
+    stmt_if        進入狀態 76
+    stmt_switch    進入狀態 77
+    stmt_while     進入狀態 78
+    stmt_for       進入狀態 79
+    var_decl       進入狀態 80
+    const_decl     進入狀態 81
+    array_decl     進入狀態 82
+    scalar_decl    進入狀態 83
+    expr           進入狀態 84
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 73
+
+    9 stmts: stmt .
+
+    $預設  使用規則 9 以縮減 (stmts)
+
+
+狀態 74
+
+   20 stmt: comp_stmt .
+
+    $預設  使用規則 20 以縮減 (stmt)
+
+
+狀態 75
+
+   10 stmt: stmt_expr .
+
+    $預設  使用規則 10 以縮減 (stmt)
+
+
+狀態 76
+
+   11 stmt: stmt_if .
+
+    $預設  使用規則 11 以縮減 (stmt)
+
+
+狀態 77
+
+   12 stmt: stmt_switch .
+
+    $預設  使用規則 12 以縮減 (stmt)
+
+
+狀態 78
+
+   13 stmt: stmt_while .
+
+    $預設  使用規則 13 以縮減 (stmt)
+
+
+狀態 79
+
+   14 stmt: stmt_for .
+
+    $預設  使用規則 14 以縮減 (stmt)
+
+
+狀態 80
+
+   19 stmt: var_decl .
+
+    $預設  使用規則 19 以縮減 (stmt)
+
+
+狀態 81
+
+   40 var_decl: const_decl .
+
+    $預設  使用規則 40 以縮減 (var_decl)
+
+
+狀態 82
+
+   41 var_decl: array_decl .
+
+    $預設  使用規則 41 以縮減 (var_decl)
+
+
+狀態 83
+
+   42 var_decl: scalar_decl .
+
+    $預設  使用規則 42 以縮減 (var_decl)
+
+
+狀態 84
+
+   23 stmt_expr: expr . SEMICOLON
+
+    SEMICOLON  偏移，並進入狀態 137
+
+
+狀態 85
+
+   77 expr: e_logic_or .
+   78 e_logic_or: e_logic_or . LOGIC_OR e_logic_and
+
+    LOGIC_OR  偏移，並進入狀態 138
+
+    $預設  使用規則 77 以縮減 (expr)
+
+
+狀態 86
+
+   79 e_logic_or: e_logic_and .
+   80 e_logic_and: e_logic_and . LOGIC_AND e_bitwise_or
+
+    LOGIC_AND  偏移，並進入狀態 139
+
+    $預設  使用規則 79 以縮減 (e_logic_or)
+
+
+狀態 87
+
+   81 e_logic_and: e_bitwise_or .
+   82 e_bitwise_or: e_bitwise_or . BITWISE_OR e_bitwise_and
+
+    BITWISE_OR  偏移，並進入狀態 140
+
+    $預設  使用規則 81 以縮減 (e_logic_and)
+
+
+狀態 88
+
+   83 e_bitwise_or: e_bitwise_and .
+   84 e_bitwise_and: e_bitwise_and . BITWISE_AND e_equal
+
+    BITWISE_AND  偏移，並進入狀態 141
+
+    $預設  使用規則 83 以縮減 (e_bitwise_or)
+
+
+狀態 89
+
+   85 e_bitwise_and: e_equal .
+   87 e_equal: e_equal . EQUAL e_greater
+   88        | e_equal . N_EQUAL e_greater
+
+    EQUAL    偏移，並進入狀態 142
+    N_EQUAL  偏移，並進入狀態 143
+
+    $預設  使用規則 85 以縮減 (e_bitwise_and)
+
+
+狀態 90
+
+   89 e_equal: e_greater .
+   90 e_greater: e_greater . GREATER e_add_sub
+   91          | e_greater . G_EQUAL e_add_sub
+   92          | e_greater . LESS e_add_sub
+   93          | e_greater . L_EQUAL e_add_sub
+
+    G_EQUAL  偏移，並進入狀態 144
+    L_EQUAL  偏移，並進入狀態 145
+    GREATER  偏移，並進入狀態 146
+    LESS     偏移，並進入狀態 147
+
+    $預設  使用規則 89 以縮減 (e_equal)
+
+
+狀態 91
+
+   94 e_greater: e_add_sub .
+   95 e_add_sub: e_add_sub . plus_minus e_mul_div_mod
+
+    MINUS  偏移，並進入狀態 62
+    PLUS   偏移，並進入狀態 63
+
+    $預設  使用規則 94 以縮減 (e_greater)
+
+    plus_minus  進入狀態 148
+
+
+狀態 92
+
+   96 e_add_sub: e_mul_div_mod .
+   97 e_mul_div_mod: e_mul_div_mod . mul_div_mod e_unary
+
+    MUL  偏移，並進入狀態 149
+    DIV  偏移，並進入狀態 150
+    MOD  偏移，並進入狀態 151
+
+    $預設  使用規則 96 以縮減 (e_add_sub)
+
+    mul_div_mod  進入狀態 152
+
+
+狀態 93
+
+   98 e_mul_div_mod: e_unary .
+
+    $預設  使用規則 98 以縮減 (e_mul_div_mod)
+
+
+狀態 94
+
+  102 e_unary: e_top .
+
+    $預設  使用規則 102 以縮減 (e_unary)
+
+
+狀態 95
+
+  100 e_unary: plus_minus . e_unary
+
+    OP       偏移，並進入狀態 49
+    ID       偏移，並進入狀態 58
+    CHAR     偏移，並進入狀態 59
+    STRING   偏移，並進入狀態 60
+    MINUS    偏移，並進入狀態 62
+    PLUS     偏移，並進入狀態 63
+    NEG      偏移，並進入狀態 64
+    INC      偏移，並進入狀態 65
+    DEC      偏移，並進入狀態 66
+    L_PARA   偏移，並進入狀態 68
+    INTEGER  偏移，並進入狀態 70
+    DOUBLE   偏移，並進入狀態 71
+
+    e_unary     進入狀態 153
+    e_top       進入狀態 94
+    plus_minus  進入狀態 95
+    inc_dec     進入狀態 96
+    call_fn     進入狀態 97
+    VAR         進入狀態 131
+    LITER       進入狀態 99
+
+
+狀態 96
+
+  101 e_unary: inc_dec . VAR
+
+    ID  偏移，並進入狀態 58
+
+    VAR  進入狀態 154
+
+
+狀態 97
+
+  104 e_top: call_fn .
+
+    $預設  使用規則 104 以縮減 (e_top)
+
+
+狀態 98
+
+   76 expr: VAR . ASSIGN expr
+  103 e_top: VAR . inc_dec
+  105      | VAR .
+  116 call_fn: VAR . L_PARA params R_PARA
+
+    OP      偏移，並進入狀態 49
+    INC     偏移，並進入狀態 65
+    DEC     偏移，並進入狀態 66
+    L_PARA  偏移，並進入狀態 155
+    ASSIGN  偏移，並進入狀態 156
+
+    $預設  使用規則 105 以縮減 (e_top)
+
+    inc_dec  進入狀態 157
+
+
+狀態 99
+
+  106 e_top: LITER .
+
+    $預設  使用規則 106 以縮減 (e_top)
+
+
+狀態 100
+
+   65 arr_brkt: L_BRKT expr . R_BRKT
+
+    R_BRKT  偏移，並進入狀態 158
+
+
+狀態 101
+
+   73 ident_init: ID ASSIGN expr .
+
+    $預設  使用規則 73 以縮減 (ident_init)
+
+
+狀態 102
+
+   63 arr_brkts: arr_brkts arr_brkt .
+
+    $預設  使用規則 63 以縮減 (arr_brkts)
+
+
+狀態 103
+
+   62 array: ID . arr_brkts
+
+    L_BRKT  偏移，並進入狀態 30
+
+    arr_brkts  進入狀態 32
+    arr_brkt   進入狀態 33
+
+
+狀態 104
+
+   58 arrays: arrays COMMA array_init .
+
+    $預設  使用規則 58 以縮減 (arrays)
+
+
+狀態 105
+
+   68 arr_ctnt: L_CURV . arr_ctnts R_CURV
+
+    OP           偏移，並進入狀態 49
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_CURV       偏移，並進入狀態 105
+    L_PARA       偏移，並進入狀態 68
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    arr_ctnts      進入狀態 159
+    arr_ctnt       進入狀態 160
+    expr           進入狀態 107
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 106
+
+   60 array_init: array ASSIGN arr_ctnt .
+
+    $預設  使用規則 60 以縮減 (array_init)
+
+
+狀態 107
+
+   69 arr_ctnt: expr .
+
+    $預設  使用規則 69 以縮減 (arr_ctnt)
+
+
+狀態 108
+
+   73 ident_init: ID . ASSIGN expr
+   74           | ID .
+
+    ASSIGN  偏移，並進入狀態 31
+
+    $預設  使用規則 74 以縮減 (ident_init)
+
+
+狀態 109
+
+   75 ident_init: MUL . ID
+
+    ID  偏移，並進入狀態 161
+
+
+狀態 110
+
+   71 idents: idents COMMA ident_init .
+
+    $預設  使用規則 71 以縮減 (idents)
+
+
+狀態 111
+
+   56 const_ident: ID ASSIGN . expr
+
+    OP           偏移，並進入狀態 49
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_PARA       偏移，並進入狀態 68
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    expr           進入狀態 162
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 112
+
+   54 const_idents: const_idents COMMA . const_ident
+
+    ID  偏移，並進入狀態 42
+
+    const_ident  進入狀態 163
+
+
+狀態 113
+
+   53 const_decl: CONST TYPE const_idents SEMICOLON .
+
+    $預設  使用規則 53 以縮減 (const_decl)
+
+
+狀態 114
+
+   52 fn_param: TYPE ID .
+
+    $預設  使用規則 52 以縮減 (fn_param)
+
+
+狀態 115
+
+   49 fn_params: fn_params COMMA . fn_param
+
+    TYPE  偏移，並進入狀態 45
+
+    fn_param  進入狀態 164
+
+
+狀態 116
+
+   47 fn_head: ID L_PARA fn_params R_PARA .
+
+    $預設  使用規則 47 以縮減 (fn_head)
+
+
+狀態 117
+
+   48 fn_head: MUL ID L_PARA fn_params . R_PARA
+   49 fn_params: fn_params . COMMA fn_param
+
+    COMMA   偏移，並進入狀態 115
+    R_PARA  偏移，並進入狀態 165
+
+
+狀態 118
+
+   17 stmt: BREAK SEMICOLON .
+
+    $預設  使用規則 17 以縮減 (stmt)
+
+
+狀態 119
+
+   18 stmt: CONTINUE SEMICOLON .
+
+    $預設  使用規則 18 以縮減 (stmt)
+
+
+狀態 120
+
+   16 stmt: RET SEMICOLON .
+
+    $預設  使用規則 16 以縮減 (stmt)
+
+
+狀態 121
+
+   15 stmt: RET expr . SEMICOLON
+
+    SEMICOLON  偏移，並進入狀態 166
+
+
+狀態 122
+
+   36 stmt_for: FOR L_PARA . for_ctnt R_PARA stmt
+
+    OP           偏移，並進入狀態 49
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_PARA       偏移，並進入狀態 68
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    $預設  使用規則 39 以縮減 (expr_)
+
+    for_ctnt       進入狀態 167
+    expr_          進入狀態 168
+    expr           進入狀態 169
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 123
+
+   35 stmt_while: DO stmt . WHILE L_PARA expr R_PARA SEMICOLON
+
+    WHILE  偏移，並進入狀態 170
+
+
+狀態 124
+
+   34 stmt_while: WHILE L_PARA . expr R_PARA stmt
+
+    OP           偏移，並進入狀態 49
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_PARA       偏移，並進入狀態 68
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    expr           進入狀態 171
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 125
+
+   26 stmt_switch: SWITCH L_PARA . expr R_PARA L_CURV swth_clauses R_CURV
+   27            | SWITCH L_PARA . expr R_PARA L_CURV R_CURV
+
+    OP           偏移，並進入狀態 49
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_PARA       偏移，並進入狀態 68
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    expr           進入狀態 172
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 126
+
+   62 array: ID . arr_brkts
+   73 ident_init: ID . ASSIGN expr
+   74           | ID .
+
+    L_BRKT  偏移，並進入狀態 30
+    ASSIGN  偏移，並進入狀態 31
+
+    $預設  使用規則 74 以縮減 (ident_init)
+
+    arr_brkts  進入狀態 32
+    arr_brkt   進入狀態 33
+
+
+狀態 127
+
+  128 brkt_e: L_BRKT . expr R_BRKT
+
+    OP           偏移，並進入狀態 49
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_PARA       偏移，並進入狀態 68
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    expr           進入狀態 173
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 128
+
+  120 VAR: ID brkts_e .
+  126 brkts_e: brkts_e . brkt_e
+
+    L_BRKT  偏移，並進入狀態 127
+
+    $預設  使用規則 120 以縮減 (VAR)
+
+    brkt_e  進入狀態 174
+
+
+狀態 129
+
+  127 brkts_e: brkt_e .
+
+    $預設  使用規則 127 以縮減 (brkts_e)
+
+
+狀態 130
+
+   86 e_bitwise_and: BITWISE_AND e_equal .
+   87 e_equal: e_equal . EQUAL e_greater
+   88        | e_equal . N_EQUAL e_greater
+
+    EQUAL    偏移，並進入狀態 142
+    N_EQUAL  偏移，並進入狀態 143
+
+    $預設  使用規則 86 以縮減 (e_bitwise_and)
+
+
+狀態 131
+
+  103 e_top: VAR . inc_dec
+  105      | VAR .
+  116 call_fn: VAR . L_PARA params R_PARA
+
+    OP      偏移，並進入狀態 49
+    INC     偏移，並進入狀態 65
+    DEC     偏移，並進入狀態 66
+    L_PARA  偏移，並進入狀態 155
+
+    $預設  使用規則 105 以縮減 (e_top)
+
+    inc_dec  進入狀態 157
+
+
+狀態 132
+
+   99 e_unary: NEG e_unary .
+
+    $預設  使用規則 99 以縮減 (e_unary)
+
+
+狀態 133
+
+  107 e_top: L_PARA expr . R_PARA
+
+    R_PARA  偏移，並進入狀態 175
+
+
+狀態 134
+
+   24 stmt_if: IF L_PARA . expr R_PARA comp_stmt ELSE comp_stmt
+   25        | IF L_PARA . expr R_PARA comp_stmt
+
+    OP           偏移，並進入狀態 49
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_PARA       偏移，並進入狀態 68
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    expr           進入狀態 176
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 135
+
+   21 comp_stmt: L_CURV stmts R_CURV .
+
+    $預設  使用規則 21 以縮減 (comp_stmt)
+
+
+狀態 136
+
+    8 stmts: stmts stmt .
+
+    $預設  使用規則 8 以縮減 (stmts)
+
+
+狀態 137
+
+   23 stmt_expr: expr SEMICOLON .
+
+    $預設  使用規則 23 以縮減 (stmt_expr)
+
+
+狀態 138
+
+   78 e_logic_or: e_logic_or LOGIC_OR . e_logic_and
+
+    OP           偏移，並進入狀態 49
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_PARA       偏移，並進入狀態 68
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    e_logic_and    進入狀態 177
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 131
+    LITER          進入狀態 99
+
+
+狀態 139
+
+   80 e_logic_and: e_logic_and LOGIC_AND . e_bitwise_or
+
+    OP           偏移，並進入狀態 49
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_PARA       偏移，並進入狀態 68
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    e_bitwise_or   進入狀態 178
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 131
+    LITER          進入狀態 99
+
+
+狀態 140
+
+   82 e_bitwise_or: e_bitwise_or BITWISE_OR . e_bitwise_and
+
+    OP           偏移，並進入狀態 49
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_PARA       偏移，並進入狀態 68
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    e_bitwise_and  進入狀態 179
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 131
+    LITER          進入狀態 99
+
+
+狀態 141
+
+   84 e_bitwise_and: e_bitwise_and BITWISE_AND . e_equal
+
+    OP       偏移，並進入狀態 49
+    ID       偏移，並進入狀態 58
+    CHAR     偏移，並進入狀態 59
+    STRING   偏移，並進入狀態 60
+    MINUS    偏移，並進入狀態 62
+    PLUS     偏移，並進入狀態 63
+    NEG      偏移，並進入狀態 64
+    INC      偏移，並進入狀態 65
+    DEC      偏移，並進入狀態 66
+    L_PARA   偏移，並進入狀態 68
+    INTEGER  偏移，並進入狀態 70
+    DOUBLE   偏移，並進入狀態 71
+
+    e_equal        進入狀態 180
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 131
+    LITER          進入狀態 99
+
+
+狀態 142
+
+   87 e_equal: e_equal EQUAL . e_greater
+
+    OP       偏移，並進入狀態 49
+    ID       偏移，並進入狀態 58
+    CHAR     偏移，並進入狀態 59
+    STRING   偏移，並進入狀態 60
+    MINUS    偏移，並進入狀態 62
+    PLUS     偏移，並進入狀態 63
+    NEG      偏移，並進入狀態 64
+    INC      偏移，並進入狀態 65
+    DEC      偏移，並進入狀態 66
+    L_PARA   偏移，並進入狀態 68
+    INTEGER  偏移，並進入狀態 70
+    DOUBLE   偏移，並進入狀態 71
+
+    e_greater      進入狀態 181
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 131
+    LITER          進入狀態 99
+
+
+狀態 143
+
+   88 e_equal: e_equal N_EQUAL . e_greater
+
+    OP       偏移，並進入狀態 49
+    ID       偏移，並進入狀態 58
+    CHAR     偏移，並進入狀態 59
+    STRING   偏移，並進入狀態 60
+    MINUS    偏移，並進入狀態 62
+    PLUS     偏移，並進入狀態 63
+    NEG      偏移，並進入狀態 64
+    INC      偏移，並進入狀態 65
+    DEC      偏移，並進入狀態 66
+    L_PARA   偏移，並進入狀態 68
+    INTEGER  偏移，並進入狀態 70
+    DOUBLE   偏移，並進入狀態 71
+
+    e_greater      進入狀態 182
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 131
+    LITER          進入狀態 99
+
+
+狀態 144
+
+   91 e_greater: e_greater G_EQUAL . e_add_sub
+
+    OP       偏移，並進入狀態 49
+    ID       偏移，並進入狀態 58
+    CHAR     偏移，並進入狀態 59
+    STRING   偏移，並進入狀態 60
+    MINUS    偏移，並進入狀態 62
+    PLUS     偏移，並進入狀態 63
+    NEG      偏移，並進入狀態 64
+    INC      偏移，並進入狀態 65
+    DEC      偏移，並進入狀態 66
+    L_PARA   偏移，並進入狀態 68
+    INTEGER  偏移，並進入狀態 70
+    DOUBLE   偏移，並進入狀態 71
+
+    e_add_sub      進入狀態 183
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 131
+    LITER          進入狀態 99
+
+
+狀態 145
+
+   93 e_greater: e_greater L_EQUAL . e_add_sub
+
+    OP       偏移，並進入狀態 49
+    ID       偏移，並進入狀態 58
+    CHAR     偏移，並進入狀態 59
+    STRING   偏移，並進入狀態 60
+    MINUS    偏移，並進入狀態 62
+    PLUS     偏移，並進入狀態 63
+    NEG      偏移，並進入狀態 64
+    INC      偏移，並進入狀態 65
+    DEC      偏移，並進入狀態 66
+    L_PARA   偏移，並進入狀態 68
+    INTEGER  偏移，並進入狀態 70
+    DOUBLE   偏移，並進入狀態 71
+
+    e_add_sub      進入狀態 184
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 131
+    LITER          進入狀態 99
+
+
+狀態 146
+
+   90 e_greater: e_greater GREATER . e_add_sub
+
+    OP       偏移，並進入狀態 49
+    ID       偏移，並進入狀態 58
+    CHAR     偏移，並進入狀態 59
+    STRING   偏移，並進入狀態 60
+    MINUS    偏移，並進入狀態 62
+    PLUS     偏移，並進入狀態 63
+    NEG      偏移，並進入狀態 64
+    INC      偏移，並進入狀態 65
+    DEC      偏移，並進入狀態 66
+    L_PARA   偏移，並進入狀態 68
+    INTEGER  偏移，並進入狀態 70
+    DOUBLE   偏移，並進入狀態 71
+
+    e_add_sub      進入狀態 185
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 131
+    LITER          進入狀態 99
+
+
+狀態 147
+
+   92 e_greater: e_greater LESS . e_add_sub
+
+    OP       偏移，並進入狀態 49
+    ID       偏移，並進入狀態 58
+    CHAR     偏移，並進入狀態 59
+    STRING   偏移，並進入狀態 60
+    MINUS    偏移，並進入狀態 62
+    PLUS     偏移，並進入狀態 63
+    NEG      偏移，並進入狀態 64
+    INC      偏移，並進入狀態 65
+    DEC      偏移，並進入狀態 66
+    L_PARA   偏移，並進入狀態 68
+    INTEGER  偏移，並進入狀態 70
+    DOUBLE   偏移，並進入狀態 71
+
+    e_add_sub      進入狀態 186
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 131
+    LITER          進入狀態 99
+
+
+狀態 148
+
+   95 e_add_sub: e_add_sub plus_minus . e_mul_div_mod
+
+    OP       偏移，並進入狀態 49
+    ID       偏移，並進入狀態 58
+    CHAR     偏移，並進入狀態 59
+    STRING   偏移，並進入狀態 60
+    MINUS    偏移，並進入狀態 62
+    PLUS     偏移，並進入狀態 63
+    NEG      偏移，並進入狀態 64
+    INC      偏移，並進入狀態 65
+    DEC      偏移，並進入狀態 66
+    L_PARA   偏移，並進入狀態 68
+    INTEGER  偏移，並進入狀態 70
+    DOUBLE   偏移，並進入狀態 71
+
+    e_mul_div_mod  進入狀態 187
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 131
+    LITER          進入狀態 99
+
+
+狀態 149
+
+  110 mul_div_mod: MUL .
+
+    $預設  使用規則 110 以縮減 (mul_div_mod)
+
+
+狀態 150
+
+  111 mul_div_mod: DIV .
+
+    $預設  使用規則 111 以縮減 (mul_div_mod)
+
+
+狀態 151
+
+  112 mul_div_mod: MOD .
+
+    $預設  使用規則 112 以縮減 (mul_div_mod)
+
+
+狀態 152
+
+   97 e_mul_div_mod: e_mul_div_mod mul_div_mod . e_unary
+
+    OP       偏移，並進入狀態 49
+    ID       偏移，並進入狀態 58
+    CHAR     偏移，並進入狀態 59
+    STRING   偏移，並進入狀態 60
+    MINUS    偏移，並進入狀態 62
+    PLUS     偏移，並進入狀態 63
+    NEG      偏移，並進入狀態 64
+    INC      偏移，並進入狀態 65
+    DEC      偏移，並進入狀態 66
+    L_PARA   偏移，並進入狀態 68
+    INTEGER  偏移，並進入狀態 70
+    DOUBLE   偏移，並進入狀態 71
+
+    e_unary     進入狀態 188
+    e_top       進入狀態 94
+    plus_minus  進入狀態 95
+    inc_dec     進入狀態 96
+    call_fn     進入狀態 97
+    VAR         進入狀態 131
+    LITER       進入狀態 99
+
+
+狀態 153
+
+  100 e_unary: plus_minus e_unary .
+
+    $預設  使用規則 100 以縮減 (e_unary)
+
+
+狀態 154
+
+  101 e_unary: inc_dec VAR .
+
+    $預設  使用規則 101 以縮減 (e_unary)
+
+
+狀態 155
+
+  116 call_fn: VAR L_PARA . params R_PARA
+
+    OP           偏移，並進入狀態 49
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_PARA       偏移，並進入狀態 68
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    $預設  使用規則 119 以縮減 (params)
+
+    expr           進入狀態 189
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    params         進入狀態 190
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 156
+
+   76 expr: VAR ASSIGN . expr
+
+    OP           偏移，並進入狀態 49
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_PARA       偏移，並進入狀態 68
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    expr           進入狀態 191
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 157
+
+  103 e_top: VAR inc_dec .
+
+    $預設  使用規則 103 以縮減 (e_top)
+
+
+狀態 158
+
+   65 arr_brkt: L_BRKT expr R_BRKT .
+
+    $預設  使用規則 65 以縮減 (arr_brkt)
+
+
+狀態 159
+
+   66 arr_ctnts: arr_ctnts . COMMA arr_ctnt
+   68 arr_ctnt: L_CURV arr_ctnts . R_CURV
+
+    COMMA   偏移，並進入狀態 192
+    R_CURV  偏移，並進入狀態 193
+
+
+狀態 160
+
+   67 arr_ctnts: arr_ctnt .
+
+    $預設  使用規則 67 以縮減 (arr_ctnts)
+
+
+狀態 161
+
+   75 ident_init: MUL ID .
+
+    $預設  使用規則 75 以縮減 (ident_init)
+
+
+狀態 162
+
+   56 const_ident: ID ASSIGN expr .
+
+    $預設  使用規則 56 以縮減 (const_ident)
+
+
+狀態 163
+
+   54 const_idents: const_idents COMMA const_ident .
+
+    $預設  使用規則 54 以縮減 (const_idents)
+
+
+狀態 164
+
+   49 fn_params: fn_params COMMA fn_param .
+
+    $預設  使用規則 49 以縮減 (fn_params)
+
+
+狀態 165
+
+   48 fn_head: MUL ID L_PARA fn_params R_PARA .
+
+    $預設  使用規則 48 以縮減 (fn_head)
+
+
+狀態 166
+
+   15 stmt: RET expr SEMICOLON .
+
+    $預設  使用規則 15 以縮減 (stmt)
+
+
+狀態 167
+
+   36 stmt_for: FOR L_PARA for_ctnt . R_PARA stmt
+
+    R_PARA  偏移，並進入狀態 194
+
+
+狀態 168
+
+   37 for_ctnt: expr_ . SEMICOLON expr_ SEMICOLON expr_
+
+    SEMICOLON  偏移，並進入狀態 195
+
+
+狀態 169
+
+   38 expr_: expr .
+
+    $預設  使用規則 38 以縮減 (expr_)
+
+
+狀態 170
+
+   35 stmt_while: DO stmt WHILE . L_PARA expr R_PARA SEMICOLON
+
+    L_PARA  偏移，並進入狀態 196
+
+
+狀態 171
+
+   34 stmt_while: WHILE L_PARA expr . R_PARA stmt
+
+    R_PARA  偏移，並進入狀態 197
+
+
+狀態 172
+
+   26 stmt_switch: SWITCH L_PARA expr . R_PARA L_CURV swth_clauses R_CURV
+   27            | SWITCH L_PARA expr . R_PARA L_CURV R_CURV
+
+    R_PARA  偏移，並進入狀態 198
+
+
+狀態 173
+
+  128 brkt_e: L_BRKT expr . R_BRKT
+
+    R_BRKT  偏移，並進入狀態 199
+
+
+狀態 174
+
+  126 brkts_e: brkts_e brkt_e .
+
+    $預設  使用規則 126 以縮減 (brkts_e)
+
+
+狀態 175
+
+  107 e_top: L_PARA expr R_PARA .
+
+    $預設  使用規則 107 以縮減 (e_top)
+
+
+狀態 176
+
+   24 stmt_if: IF L_PARA expr . R_PARA comp_stmt ELSE comp_stmt
+   25        | IF L_PARA expr . R_PARA comp_stmt
+
+    R_PARA  偏移，並進入狀態 200
+
+
+狀態 177
+
+   78 e_logic_or: e_logic_or LOGIC_OR e_logic_and .
+   80 e_logic_and: e_logic_and . LOGIC_AND e_bitwise_or
+
+    LOGIC_AND  偏移，並進入狀態 139
+
+    $預設  使用規則 78 以縮減 (e_logic_or)
+
+
+狀態 178
+
+   80 e_logic_and: e_logic_and LOGIC_AND e_bitwise_or .
+   82 e_bitwise_or: e_bitwise_or . BITWISE_OR e_bitwise_and
+
+    BITWISE_OR  偏移，並進入狀態 140
+
+    $預設  使用規則 80 以縮減 (e_logic_and)
+
+
+狀態 179
+
+   82 e_bitwise_or: e_bitwise_or BITWISE_OR e_bitwise_and .
+   84 e_bitwise_and: e_bitwise_and . BITWISE_AND e_equal
+
+    BITWISE_AND  偏移，並進入狀態 141
+
+    $預設  使用規則 82 以縮減 (e_bitwise_or)
+
+
+狀態 180
+
+   84 e_bitwise_and: e_bitwise_and BITWISE_AND e_equal .
+   87 e_equal: e_equal . EQUAL e_greater
+   88        | e_equal . N_EQUAL e_greater
+
+    EQUAL    偏移，並進入狀態 142
+    N_EQUAL  偏移，並進入狀態 143
+
+    $預設  使用規則 84 以縮減 (e_bitwise_and)
+
+
+狀態 181
+
+   87 e_equal: e_equal EQUAL e_greater .
+   90 e_greater: e_greater . GREATER e_add_sub
+   91          | e_greater . G_EQUAL e_add_sub
+   92          | e_greater . LESS e_add_sub
+   93          | e_greater . L_EQUAL e_add_sub
+
+    G_EQUAL  偏移，並進入狀態 144
+    L_EQUAL  偏移，並進入狀態 145
+    GREATER  偏移，並進入狀態 146
+    LESS     偏移，並進入狀態 147
+
+    $預設  使用規則 87 以縮減 (e_equal)
+
+
+狀態 182
+
+   88 e_equal: e_equal N_EQUAL e_greater .
+   90 e_greater: e_greater . GREATER e_add_sub
+   91          | e_greater . G_EQUAL e_add_sub
+   92          | e_greater . LESS e_add_sub
+   93          | e_greater . L_EQUAL e_add_sub
+
+    G_EQUAL  偏移，並進入狀態 144
+    L_EQUAL  偏移，並進入狀態 145
+    GREATER  偏移，並進入狀態 146
+    LESS     偏移，並進入狀態 147
+
+    $預設  使用規則 88 以縮減 (e_equal)
+
+
+狀態 183
+
+   91 e_greater: e_greater G_EQUAL e_add_sub .
+   95 e_add_sub: e_add_sub . plus_minus e_mul_div_mod
+
+    MINUS  偏移，並進入狀態 62
+    PLUS   偏移，並進入狀態 63
+
+    $預設  使用規則 91 以縮減 (e_greater)
+
+    plus_minus  進入狀態 148
+
+
+狀態 184
+
+   93 e_greater: e_greater L_EQUAL e_add_sub .
+   95 e_add_sub: e_add_sub . plus_minus e_mul_div_mod
+
+    MINUS  偏移，並進入狀態 62
+    PLUS   偏移，並進入狀態 63
+
+    $預設  使用規則 93 以縮減 (e_greater)
+
+    plus_minus  進入狀態 148
+
+
+狀態 185
+
+   90 e_greater: e_greater GREATER e_add_sub .
+   95 e_add_sub: e_add_sub . plus_minus e_mul_div_mod
+
+    MINUS  偏移，並進入狀態 62
+    PLUS   偏移，並進入狀態 63
+
+    $預設  使用規則 90 以縮減 (e_greater)
+
+    plus_minus  進入狀態 148
+
+
+狀態 186
+
+   92 e_greater: e_greater LESS e_add_sub .
+   95 e_add_sub: e_add_sub . plus_minus e_mul_div_mod
+
+    MINUS  偏移，並進入狀態 62
+    PLUS   偏移，並進入狀態 63
+
+    $預設  使用規則 92 以縮減 (e_greater)
+
+    plus_minus  進入狀態 148
+
+
+狀態 187
+
+   95 e_add_sub: e_add_sub plus_minus e_mul_div_mod .
+   97 e_mul_div_mod: e_mul_div_mod . mul_div_mod e_unary
+
+    MUL  偏移，並進入狀態 149
+    DIV  偏移，並進入狀態 150
+    MOD  偏移，並進入狀態 151
+
+    $預設  使用規則 95 以縮減 (e_add_sub)
+
+    mul_div_mod  進入狀態 152
+
+
+狀態 188
+
+   97 e_mul_div_mod: e_mul_div_mod mul_div_mod e_unary .
+
+    $預設  使用規則 97 以縮減 (e_mul_div_mod)
+
+
+狀態 189
+
+  118 params: expr .
+
+    $預設  使用規則 118 以縮減 (params)
+
+
+狀態 190
+
+  116 call_fn: VAR L_PARA params . R_PARA
+  117 params: params . COMMA expr
+
+    COMMA   偏移，並進入狀態 201
+    R_PARA  偏移，並進入狀態 202
+
+
+狀態 191
+
+   76 expr: VAR ASSIGN expr .
+
+    $預設  使用規則 76 以縮減 (expr)
+
+
+狀態 192
+
+   66 arr_ctnts: arr_ctnts COMMA . arr_ctnt
+
+    OP           偏移，並進入狀態 49
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_CURV       偏移，並進入狀態 105
+    L_PARA       偏移，並進入狀態 68
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    arr_ctnt       進入狀態 203
+    expr           進入狀態 107
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 193
+
+   68 arr_ctnt: L_CURV arr_ctnts R_CURV .
+
+    $預設  使用規則 68 以縮減 (arr_ctnt)
+
+
+狀態 194
+
+   36 stmt_for: FOR L_PARA for_ctnt R_PARA . stmt
+
+    OP           偏移，並進入狀態 49
+    BREAK        偏移，並進入狀態 50
+    CONTINUE     偏移，並進入狀態 51
+    RET          偏移，並進入狀態 52
+    FOR          偏移，並進入狀態 53
+    DO           偏移，並進入狀態 54
+    WHILE        偏移，並進入狀態 55
+    SWITCH       偏移，並進入狀態 56
+    TYPE         偏移，並進入狀態 57
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    CONST        偏移，並進入狀態 3
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_CURV       偏移，並進入狀態 28
+    L_PARA       偏移，並進入狀態 68
+    IF           偏移，並進入狀態 69
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    stmt           進入狀態 204
+    comp_stmt      進入狀態 74
+    stmt_expr      進入狀態 75
+    stmt_if        進入狀態 76
+    stmt_switch    進入狀態 77
+    stmt_while     進入狀態 78
+    stmt_for       進入狀態 79
+    var_decl       進入狀態 80
+    const_decl     進入狀態 81
+    array_decl     進入狀態 82
+    scalar_decl    進入狀態 83
+    expr           進入狀態 84
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 195
+
+   37 for_ctnt: expr_ SEMICOLON . expr_ SEMICOLON expr_
+
+    OP           偏移，並進入狀態 49
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_PARA       偏移，並進入狀態 68
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    $預設  使用規則 39 以縮減 (expr_)
+
+    expr_          進入狀態 205
+    expr           進入狀態 169
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 196
+
+   35 stmt_while: DO stmt WHILE L_PARA . expr R_PARA SEMICOLON
+
+    OP           偏移，並進入狀態 49
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_PARA       偏移，並進入狀態 68
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    expr           進入狀態 206
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 197
+
+   34 stmt_while: WHILE L_PARA expr R_PARA . stmt
+
+    OP           偏移，並進入狀態 49
+    BREAK        偏移，並進入狀態 50
+    CONTINUE     偏移，並進入狀態 51
+    RET          偏移，並進入狀態 52
+    FOR          偏移，並進入狀態 53
+    DO           偏移，並進入狀態 54
+    WHILE        偏移，並進入狀態 55
+    SWITCH       偏移，並進入狀態 56
+    TYPE         偏移，並進入狀態 57
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    CONST        偏移，並進入狀態 3
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_CURV       偏移，並進入狀態 28
+    L_PARA       偏移，並進入狀態 68
+    IF           偏移，並進入狀態 69
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    stmt           進入狀態 207
+    comp_stmt      進入狀態 74
+    stmt_expr      進入狀態 75
+    stmt_if        進入狀態 76
+    stmt_switch    進入狀態 77
+    stmt_while     進入狀態 78
+    stmt_for       進入狀態 79
+    var_decl       進入狀態 80
+    const_decl     進入狀態 81
+    array_decl     進入狀態 82
+    scalar_decl    進入狀態 83
+    expr           進入狀態 84
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 198
+
+   26 stmt_switch: SWITCH L_PARA expr R_PARA . L_CURV swth_clauses R_CURV
+   27            | SWITCH L_PARA expr R_PARA . L_CURV R_CURV
+
+    L_CURV  偏移，並進入狀態 208
+
+
+狀態 199
+
+  128 brkt_e: L_BRKT expr R_BRKT .
+
+    $預設  使用規則 128 以縮減 (brkt_e)
+
+
+狀態 200
+
+   24 stmt_if: IF L_PARA expr R_PARA . comp_stmt ELSE comp_stmt
+   25        | IF L_PARA expr R_PARA . comp_stmt
+
+    L_CURV  偏移，並進入狀態 28
+
+    comp_stmt  進入狀態 209
+
+
+狀態 201
+
+  117 params: params COMMA . expr
+
+    OP           偏移，並進入狀態 49
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_PARA       偏移，並進入狀態 68
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    expr           進入狀態 210
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 202
+
+  116 call_fn: VAR L_PARA params R_PARA .
+
+    $預設  使用規則 116 以縮減 (call_fn)
+
+
+狀態 203
+
+   66 arr_ctnts: arr_ctnts COMMA arr_ctnt .
+
+    $預設  使用規則 66 以縮減 (arr_ctnts)
+
+
+狀態 204
+
+   36 stmt_for: FOR L_PARA for_ctnt R_PARA stmt .
+
+    $預設  使用規則 36 以縮減 (stmt_for)
+
+
+狀態 205
+
+   37 for_ctnt: expr_ SEMICOLON expr_ . SEMICOLON expr_
+
+    SEMICOLON  偏移，並進入狀態 211
+
+
+狀態 206
+
+   35 stmt_while: DO stmt WHILE L_PARA expr . R_PARA SEMICOLON
+
+    R_PARA  偏移，並進入狀態 212
+
+
+狀態 207
+
+   34 stmt_while: WHILE L_PARA expr R_PARA stmt .
+
+    $預設  使用規則 34 以縮減 (stmt_while)
+
+
+狀態 208
+
+   26 stmt_switch: SWITCH L_PARA expr R_PARA L_CURV . swth_clauses R_CURV
+   27            | SWITCH L_PARA expr R_PARA L_CURV . R_CURV
+
+    CASE     偏移，並進入狀態 213
+    DEFAULT  偏移，並進入狀態 214
+    R_CURV   偏移，並進入狀態 215
+
+    swth_clauses  進入狀態 216
+    swth_clause   進入狀態 217
+
+
+狀態 209
+
+   24 stmt_if: IF L_PARA expr R_PARA comp_stmt . ELSE comp_stmt
+   25        | IF L_PARA expr R_PARA comp_stmt .
+
+    ELSE  偏移，並進入狀態 218
+
+    $預設  使用規則 25 以縮減 (stmt_if)
+
+
+狀態 210
+
+  117 params: params COMMA expr .
+
+    $預設  使用規則 117 以縮減 (params)
+
+
+狀態 211
+
+   37 for_ctnt: expr_ SEMICOLON expr_ SEMICOLON . expr_
+
+    OP           偏移，並進入狀態 49
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_PARA       偏移，並進入狀態 68
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    $預設  使用規則 39 以縮減 (expr_)
+
+    expr_          進入狀態 219
+    expr           進入狀態 169
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 212
+
+   35 stmt_while: DO stmt WHILE L_PARA expr R_PARA . SEMICOLON
+
+    SEMICOLON  偏移，並進入狀態 220
+
+
+狀態 213
+
+   30 swth_clause: CASE . expr COLON stmts
+   31            | CASE . expr COLON
+
+    OP           偏移，並進入狀態 49
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_PARA       偏移，並進入狀態 68
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    expr           進入狀態 221
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 214
+
+   32 swth_clause: DEFAULT . COLON stmts
+   33            | DEFAULT . COLON
+
+    COLON  偏移，並進入狀態 222
+
+
+狀態 215
+
+   27 stmt_switch: SWITCH L_PARA expr R_PARA L_CURV R_CURV .
+
+    $預設  使用規則 27 以縮減 (stmt_switch)
+
+
+狀態 216
+
+   26 stmt_switch: SWITCH L_PARA expr R_PARA L_CURV swth_clauses . R_CURV
+   28 swth_clauses: swth_clauses . swth_clause
+
+    CASE     偏移，並進入狀態 213
+    DEFAULT  偏移，並進入狀態 214
+    R_CURV   偏移，並進入狀態 223
+
+    swth_clause  進入狀態 224
+
+
+狀態 217
+
+   29 swth_clauses: swth_clause .
+
+    $預設  使用規則 29 以縮減 (swth_clauses)
+
+
+狀態 218
+
+   24 stmt_if: IF L_PARA expr R_PARA comp_stmt ELSE . comp_stmt
+
+    L_CURV  偏移，並進入狀態 28
+
+    comp_stmt  進入狀態 225
+
+
+狀態 219
+
+   37 for_ctnt: expr_ SEMICOLON expr_ SEMICOLON expr_ .
+
+    $預設  使用規則 37 以縮減 (for_ctnt)
+
+
+狀態 220
+
+   35 stmt_while: DO stmt WHILE L_PARA expr R_PARA SEMICOLON .
+
+    $預設  使用規則 35 以縮減 (stmt_while)
+
+
+狀態 221
+
+   30 swth_clause: CASE expr . COLON stmts
+   31            | CASE expr . COLON
+
+    COLON  偏移，並進入狀態 226
+
+
+狀態 222
+
+   32 swth_clause: DEFAULT COLON . stmts
+   33            | DEFAULT COLON .
+
+    OP           偏移，並進入狀態 49
+    BREAK        偏移，並進入狀態 50
+    CONTINUE     偏移，並進入狀態 51
+    RET          偏移，並進入狀態 52
+    FOR          偏移，並進入狀態 53
+    DO           偏移，並進入狀態 54
+    WHILE        偏移，並進入狀態 55
+    SWITCH       偏移，並進入狀態 56
+    TYPE         偏移，並進入狀態 57
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    CONST        偏移，並進入狀態 3
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_CURV       偏移，並進入狀態 28
+    L_PARA       偏移，並進入狀態 68
+    IF           偏移，並進入狀態 69
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    $預設  使用規則 33 以縮減 (swth_clause)
+
+    stmts          進入狀態 227
+    stmt           進入狀態 73
+    comp_stmt      進入狀態 74
+    stmt_expr      進入狀態 75
+    stmt_if        進入狀態 76
+    stmt_switch    進入狀態 77
+    stmt_while     進入狀態 78
+    stmt_for       進入狀態 79
+    var_decl       進入狀態 80
+    const_decl     進入狀態 81
+    array_decl     進入狀態 82
+    scalar_decl    進入狀態 83
+    expr           進入狀態 84
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 223
+
+   26 stmt_switch: SWITCH L_PARA expr R_PARA L_CURV swth_clauses R_CURV .
+
+    $預設  使用規則 26 以縮減 (stmt_switch)
+
+
+狀態 224
+
+   28 swth_clauses: swth_clauses swth_clause .
+
+    $預設  使用規則 28 以縮減 (swth_clauses)
+
+
+狀態 225
+
+   24 stmt_if: IF L_PARA expr R_PARA comp_stmt ELSE comp_stmt .
+
+    $預設  使用規則 24 以縮減 (stmt_if)
+
+
+狀態 226
+
+   30 swth_clause: CASE expr COLON . stmts
+   31            | CASE expr COLON .
+
+    OP           偏移，並進入狀態 49
+    BREAK        偏移，並進入狀態 50
+    CONTINUE     偏移，並進入狀態 51
+    RET          偏移，並進入狀態 52
+    FOR          偏移，並進入狀態 53
+    DO           偏移，並進入狀態 54
+    WHILE        偏移，並進入狀態 55
+    SWITCH       偏移，並進入狀態 56
+    TYPE         偏移，並進入狀態 57
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    CONST        偏移，並進入狀態 3
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_CURV       偏移，並進入狀態 28
+    L_PARA       偏移，並進入狀態 68
+    IF           偏移，並進入狀態 69
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    $預設  使用規則 31 以縮減 (swth_clause)
+
+    stmts          進入狀態 228
+    stmt           進入狀態 73
+    comp_stmt      進入狀態 74
+    stmt_expr      進入狀態 75
+    stmt_if        進入狀態 76
+    stmt_switch    進入狀態 77
+    stmt_while     進入狀態 78
+    stmt_for       進入狀態 79
+    var_decl       進入狀態 80
+    const_decl     進入狀態 81
+    array_decl     進入狀態 82
+    scalar_decl    進入狀態 83
+    expr           進入狀態 84
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 227
+
+    8 stmts: stmts . stmt
+   32 swth_clause: DEFAULT COLON stmts .
+
+    OP           偏移，並進入狀態 49
+    BREAK        偏移，並進入狀態 50
+    CONTINUE     偏移，並進入狀態 51
+    RET          偏移，並進入狀態 52
+    FOR          偏移，並進入狀態 53
+    DO           偏移，並進入狀態 54
+    WHILE        偏移，並進入狀態 55
+    SWITCH       偏移，並進入狀態 56
+    TYPE         偏移，並進入狀態 57
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    CONST        偏移，並進入狀態 3
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_CURV       偏移，並進入狀態 28
+    L_PARA       偏移，並進入狀態 68
+    IF           偏移，並進入狀態 69
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    $預設  使用規則 32 以縮減 (swth_clause)
+
+    stmt           進入狀態 136
+    comp_stmt      進入狀態 74
+    stmt_expr      進入狀態 75
+    stmt_if        進入狀態 76
+    stmt_switch    進入狀態 77
+    stmt_while     進入狀態 78
+    stmt_for       進入狀態 79
+    var_decl       進入狀態 80
+    const_decl     進入狀態 81
+    array_decl     進入狀態 82
+    scalar_decl    進入狀態 83
+    expr           進入狀態 84
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99
+
+
+狀態 228
+
+    8 stmts: stmts . stmt
+   30 swth_clause: CASE expr COLON stmts .
+
+    OP           偏移，並進入狀態 49
+    BREAK        偏移，並進入狀態 50
+    CONTINUE     偏移，並進入狀態 51
+    RET          偏移，並進入狀態 52
+    FOR          偏移，並進入狀態 53
+    DO           偏移，並進入狀態 54
+    WHILE        偏移，並進入狀態 55
+    SWITCH       偏移，並進入狀態 56
+    TYPE         偏移，並進入狀態 57
+    ID           偏移，並進入狀態 58
+    CHAR         偏移，並進入狀態 59
+    STRING       偏移，並進入狀態 60
+    CONST        偏移，並進入狀態 3
+    BITWISE_AND  偏移，並進入狀態 61
+    MINUS        偏移，並進入狀態 62
+    PLUS         偏移，並進入狀態 63
+    NEG          偏移，並進入狀態 64
+    INC          偏移，並進入狀態 65
+    DEC          偏移，並進入狀態 66
+    L_CURV       偏移，並進入狀態 28
+    L_PARA       偏移，並進入狀態 68
+    IF           偏移，並進入狀態 69
+    INTEGER      偏移，並進入狀態 70
+    DOUBLE       偏移，並進入狀態 71
+
+    $預設  使用規則 30 以縮減 (swth_clause)
+
+    stmt           進入狀態 136
+    comp_stmt      進入狀態 74
+    stmt_expr      進入狀態 75
+    stmt_if        進入狀態 76
+    stmt_switch    進入狀態 77
+    stmt_while     進入狀態 78
+    stmt_for       進入狀態 79
+    var_decl       進入狀態 80
+    const_decl     進入狀態 81
+    array_decl     進入狀態 82
+    scalar_decl    進入狀態 83
+    expr           進入狀態 84
+    e_logic_or     進入狀態 85
+    e_logic_and    進入狀態 86
+    e_bitwise_or   進入狀態 87
+    e_bitwise_and  進入狀態 88
+    e_equal        進入狀態 89
+    e_greater      進入狀態 90
+    e_add_sub      進入狀態 91
+    e_mul_div_mod  進入狀態 92
+    e_unary        進入狀態 93
+    e_top          進入狀態 94
+    plus_minus     進入狀態 95
+    inc_dec        進入狀態 96
+    call_fn        進入狀態 97
+    VAR            進入狀態 98
+    LITER          進入狀態 99

@@ -1,0 +1,1008 @@
+%{
+    #include <stdio.h>
+    #include <string.h>
+    #include <stdlib.h>
+    #define MAX_SYMBOL 5000
+    int yylex(void);
+    int yyerror(char *);
+
+    enum MODE {FUNC, VAR, ARG, PTR, ARY};
+
+    struct node {
+        char *type;         // string record nodetype
+        struct node **grammer_list;    // grammer[0], grammer[1]...
+        int list_len;                   // grammer length
+        union {
+            int ival;
+            double fval;
+            char *sval;
+        };
+    };
+
+    struct symbol_table {
+        char *name;
+        int scope;
+        int offset;
+        int mode;
+        int isreturn;
+        int total_args;
+        int loaded_args;
+        int total_locals;
+        int total_saved;
+    } table[MAX_SYMBOL];
+
+    int cur_scope = 0;
+    int symbol_num = 0;
+    int cur_func = -1;
+    int label_num = 0;
+    int true_false_lb = 0;
+
+    int break_stack[10];
+    int break_top = -1;
+
+    struct node* create_node(char* type, int list_len);
+    struct node* create_string_node(char* content);
+    void decl_settype(struct node* cur, int mode);
+    int look_table(char *name);
+    int look_table_check_scope(char *name, int scope);
+    
+%}
+ 
+%union {
+    int ival;
+    double fval;
+    char *sval;
+    struct node *nptr;
+}
+%token <ival> INTEGER
+%token <sval> IDENT   FDV_TYPE
+%token CONST INT_TYPE 
+%token FOR DO WHILE IF ELSE
+%token LE_OP GE_OP EQ_OP NE_OP
+%token BREAK RETURN
+
+/* Associativity + Precedence */
+%left '+' '-'
+%left '*' '/' '%'
+%nonassoc signel_grammer
+%nonassoc IDENT
+%right '(' '['
+%nonassoc IFX
+%nonassoc ELSE
+
+/* define type for nonterminals */
+// scalar definition
+%type <nptr> init_declarator init_declarator_list
+%type <nptr> declarator direct_declarator 
+%type <sval> all_types  intttttyppe
+%type decl pointer initializer
+
+// function decl/def
+%type <nptr> func_decl func_def functype_and_initdecl
+%type <nptr> parameter_def init_declarator_def
+%type <ival> parameter_list
+
+// statement
+%type stmt for_stmt
+%type compound_stmt compound_stmt_list
+
+// expression
+%type <ival> for_expr_3 while_expr do_prefix if_expr ifelse_prefix
+%type <nptr> expr assign_expr bit_or_expr 
+%type <nptr>  bit_xor_expr bit_and_expr equal_expr
+%type <nptr> relation_expr
+%type <nptr> add_sub mul_div
+%type <nptr> unary_expr left_hand_side_unary_expr arr_funcall expr_parameter_list int_id_c
+
+%start program_start
+%type program_start program
+
+%%
+program_start:
+    program 
+    ;
+
+program:
+    decl program 
+    | func_decl program 
+    | func_def  program 
+    | decl 
+    | func_decl 
+    | func_def 
+    ;
+
+decl:
+    all_types init_declarator_list ';'
+    ;
+
+all_types:
+    CONST intttttyppe {$$ = $2;}
+    | intttttyppe {$$ = $1;}
+    | CONST   FDV_TYPE {$$ = $2;}
+    |   FDV_TYPE       {$$ = $1;}
+    ;
+
+intttttyppe:
+    INT_TYPE {$$ = "int";};
+
+init_declarator_list:
+    init_declarator {$$ = $1;}
+    | init_declarator_list ',' init_declarator; { //慘
+        struct node *cur = create_node("decl_list", 2);
+        cur->grammer_list[0] = $1;
+        cur->grammer_list[1] = $3;
+        $$ = cur;
+    }
+
+init_declarator:
+    declarator                      { $$ = $1; }
+    | declarator '=' initializer    {
+        printf("  lw   t0, 0(sp)\n"); //pop init
+        printf("  addi sp, sp, 4\n");
+        int idx = look_table($1->sval);
+        printf("  sw   t0, -%d(s0)\n", table[idx].offset); //save to decl
+        
+        $$ = $1;
+    }
+    ;
+
+initializer:
+    expr
+    ;
+
+declarator:
+    direct_declarator   { $$ = $1; }
+    | pointer direct_declarator { //ok
+        int idx = look_table($2->sval);
+        table[idx].mode = PTR;
+        $$ = $2;
+    }
+    ;
+
+pointer:
+    '*'
+    ;
+
+direct_declarator:
+    IDENT { 
+        struct node *cur = create_string_node($1);
+        if (look_table_check_scope($1, cur_scope) < 0)//??cant delete
+            symbol_insert_var($1, cur_scope, VAR);
+        $$ = cur;
+    }
+    | IDENT '[' INTEGER ']' {
+        struct node *cur = create_string_node($1);
+        symbol_insert_var($1, cur_scope, ARY);  // insert a0
+        // remain space for function
+        table[cur_func].total_locals += $3 - 1;   // give other N-1 spaces?
+        $$ = cur;
+    }
+    ;
+
+
+func_decl:
+    functype_and_initdecl '(' ')' ';' {
+        remove_from_symbol_table(cur_scope);//大於等於scope 的symbol拿掉//
+        cur_scope--;//scope out
+        cur_func = -1;
+    }
+    | functype_and_initdecl '(' parameter_list ')' ';' {
+        remove_from_symbol_table(cur_scope);//大於等於scope 的symbol拿掉//
+
+        int idx = look_table($1->sval);
+        table[idx].total_args = $3;
+
+        cur_scope--;
+        cur_func = -1;
+    }
+    ;
+
+func_def:   // 
+    functype_and_initdecl '(' ')' compound_stmt
+    {
+        remove_from_symbol_table(cur_scope);//kk
+        cur_scope--;
+        cur_func = -1;
+        printf(".%s_funcExit:\n", $1->sval);
+        printf("  lw   ra, 396(sp)\n");
+        printf("  lw   s0, 392(sp)\n");
+        printf("  addi sp, sp, 400\n");
+        printf("  ret\n");
+    }
+    | functype_and_initdecl '(' parameter_list ')' compound_stmt
+    {
+        remove_from_symbol_table(cur_scope);//kk
+        cur_scope--;
+        cur_func = -1;
+        printf(".%s_funcExit:\n", $1->sval);
+        printf("  lw   ra, 396(sp)\n");
+        printf("  lw   s0, 392(sp)\n");
+        printf("  addi sp, sp, 400\n");
+        printf("  ret\n");
+    }
+    ;
+
+functype_and_initdecl:
+    all_types init_declarator {
+        int idx = look_table($2->sval);
+        cur_scope++;
+        if (table[idx].mode != FUNC) {
+            symbol_change_func(idx, 0, 0, 2);//?
+            table[idx].isreturn = strcmp($1, "void") == 0 ? 0 : 1;
+            printf(".global %s\n", $2->sval);
+        }
+        else {
+            cur_func = idx;//ok
+            printf("%s:\n", $2->sval);
+            printf("  addi sp, sp, -400\n");//func space
+            printf("  sw   ra, 396(sp)\n");
+            printf("  sw   s0, 392(sp)\n");
+            printf("  addi s0, sp, 400\n");
+        }
+        $$ = $2;
+    }
+    ;
+
+// function definition parameters
+parameter_list:
+    parameter_def {
+        if (cur_func >= 0) {
+            int idx = look_table($1->sval);
+            printf("  sw   a0, -%d(s0)\n", table[idx].offset);
+        }
+        $$ = 1;
+    }
+    | parameter_list ',' parameter_def {
+        if (cur_func >= 0) {
+            int idx = look_table($3->sval);
+            printf("  sw   a%d, -%d(s0)\n", $1, table[idx].offset);
+        }
+        $$ = $1 + 1;
+    }
+    ;
+parameter_def:
+    all_types init_declarator_def {$$ = $2;};
+init_declarator_def:
+    IDENT {
+        struct node *cur = create_string_node($1);
+        if (look_table_check_scope($1, cur_scope) < 0)
+            symbol_insert_var($1, cur_scope, ARG);
+        $$ = cur;
+    }
+    | pointer IDENT {
+        struct node *cur = create_string_node($2);
+        if (look_table_check_scope($2, cur_scope) < 0)
+            symbol_insert_var($2, cur_scope, ARG);
+        int idx = look_table($2);
+        table[idx].mode = PTR;
+        $$ = cur;
+    };
+
+//
+stmt:
+    expr ';'
+    | IF '(' if_expr ')' compound_stmt %prec IFX {
+        printf(".IFLB_%d:\n", $3-1);//x+1 enter
+        remove_from_symbol_table(cur_scope);
+        cur_scope--;
+    }
+    | ifelse_prefix compound_stmt {//
+        printf(".IFLB_%d:\n", $1);//enter of x+2(if)
+        remove_from_symbol_table(cur_scope);
+        cur_scope--;
+    }
+    | while_prefix '(' while_expr ')' stmt {
+        printf("  j    .LB_%d\n", $3-1);//goto x+1
+        printf(".LB_%d:\n", $3);//x+2 enter
+        remove_from_symbol_table(cur_scope);
+        cur_scope--;
+        break_top--;
+    }
+    | do_prefix stmt WHILE '(' expr ')' ';' {
+        printf("  lw   t0, 0(sp)\n");
+        printf("  addi sp, sp, 4\n");
+        printf("  bne  t0, x0, .LB_%d\n", $1);
+        remove_from_symbol_table(cur_scope);
+        cur_scope--;
+    }
+    | for_stmt {
+        remove_from_symbol_table(cur_scope);
+        cur_scope--;
+        break_top--;
+    }
+    | RETURN expr ';' {
+        printf("  lw   a0, 0(sp)\n");//pop
+        printf("  addi sp, sp, 4\n");
+        printf("  j    .%s_funcExit\n", table[cur_func].name);
+    }
+    | RETURN ';' {
+        printf("  j    .%s_funcExit\n", table[cur_func].name);
+        remove_from_symbol_table(cur_scope);
+        cur_scope--;
+        cur_func = -1;
+    }
+    | BREAK ';' {
+        printf("  j    .LB_%d\n", break_stack[break_top]);
+    }
+    | compound_stmt
+    ;
+
+//
+ifelse_prefix:
+    IF '(' if_expr ')' compound_stmt ELSE {
+        printf("  j    .IFLB_%d\n", $3);//j .ilfb_x+2(if)//comp(if) finished, j to end
+        printf(".IFLB_%d:\n", $3-1);//enter of .iflb_x+1(else), comp(else)
+        remove_from_symbol_table(cur_scope);//刪
+        $$ = $3;
+    };
+
+if_expr:
+    expr {
+        cur_scope++;
+        true_false_lb += 2;
+        printf("  lw   t0, 0(sp)\n");//pop
+        printf("  addi sp, sp, 4\n");
+        printf("  beq  t0, x0, .IFLB_%d\n", true_false_lb-1);//t0==0 => .iflb_x+1 (else), comp(if)
+        $$ = true_false_lb;//
+    };
+do_prefix:
+    DO {
+        label_num += 1;
+        printf(".LB_%d:\n", label_num);
+        cur_scope++;
+        $$ = label_num;
+    };
+while_prefix:
+    WHILE {
+        label_num += 2;
+        printf(".LB_%d:\n", label_num-1);//x+1 enter
+    };
+while_expr:
+    expr {
+        printf("  lw   t0, 0(sp)\n");//pop
+        printf("  addi sp, sp, 4\n");
+        printf("  beq  t0, x0, .LB_%d\n", label_num);//if t0==0, goto x+2(end), else, stmt
+        break_top++;
+        break_stack[break_top] = label_num;
+        cur_scope++;
+        $$ = label_num;
+    }
+for_stmt:
+    FOR '(' for_expr_1 ';' for_expr_2 ';' for_expr_3 ')' stmt {
+        printf("  j    .LB_%d\n", $7 - 2);//goto -2
+        printf(".LB_%d:\n", $7);//enter of 0 (finish)
+    };
+for_expr_1:
+    expr {  // i = 0, then jump to condition
+        cur_scope++;
+        label_num += 4;
+        printf("  j    .LB_%d\n", label_num-3);//
+        printf(".LB_%d:\n", label_num-3);//enter of -3
+    };
+for_expr_2:
+    expr {  // if condition != 0, true, go stmt
+        printf("  lw   t0, 0(sp)\n");
+        printf("  addi sp, sp, 4\n");
+        printf("  bne  t0, x0, .LB_%d\n", label_num-1);//if t0!=0, goto -1 //正確
+
+        printf("  j    .LB_%d\n", label_num);//if ==0 , goto 0
+        printf(".LB_%d:\n", label_num-2);//-2 entry
+        break_top++;
+        break_stack[break_top] = label_num;
+    };
+for_expr_3:
+    expr {
+        printf("  j    .LB_%d\n", label_num-3);
+        printf(".LB_%d:\n", label_num-1);//enter of -1, stmt
+        $$ = label_num;
+    };
+
+compound_stmt:
+    '{' '}'//kk
+    | '{' compound_stmt_list '}'
+    ;
+compound_stmt_list:
+    decl //kk
+    | stmt
+    | compound_stmt_list decl
+    | compound_stmt_list stmt
+    ;
+//
+expr:
+    assign_expr {
+        $$ = $1;
+    }
+    ;
+
+
+assign_expr:
+    bit_or_expr { $$ = $1; }
+    | left_hand_side_unary_expr '=' expr {
+        printf("  lw   t0, 0(sp)\n");//pop expr
+        printf("  addi sp, sp, 4\n");
+        
+        if (strcmp($1->type, "ref") == 0) 
+        {
+            printf("  lw   t1, 0(sp)\n");//pop left(addr)
+            printf("  addi sp, sp, 4\n");
+
+            printf("  sw   t0, 0(t1)\n");//save expr to left(addr)'s 
+
+        }
+        else {
+            int idx = look_table($1->sval);
+            printf("  addi sp, sp, 4\n");//pop left value(no use)
+
+            printf("  sw   t0, -%d(s0)\n", table[idx].offset);//save expr to left's addr
+            
+        }
+        $$ = $1;
+    }
+    ;
+
+left_hand_side_unary_expr:
+    int_id_c %prec signel_grammer { $$ = $1; }
+    | '*' unary_expr {
+        $2->type = "ref";
+        $$ = $2;
+    }
+    | IDENT '[' expr ']' {
+        struct node *cur = create_node("STRING", 0);//IDENT
+        cur->sval = $1;
+        cur->type = "ref";
+        $$ = cur;
+
+        printf("  lw   t0, 0(sp)\n");//pop
+        printf("  addi sp, sp, 4\n");
+
+        printf("  slli t0, t0, 2\n");//*4
+
+        int idx = look_table($1);
+        if (table[idx].mode == PTR) {
+            printf("  lw   t1, -%d(s0)\n", table[idx].offset);
+        }
+        else if (table[idx].mode == ARY) {
+            printf("  addi t1, s0, -%d\n", table[idx].offset);
+        }
+        printf("  sub  t0, t1, t0\n");
+        printf("  addi sp, sp, -4\n");
+        printf("  sw   t0, 0(sp)\n");
+    }
+    ;
+
+bit_or_expr:
+    bit_xor_expr { $$ = $1; }
+    | bit_or_expr '|' bit_xor_expr {
+        printf("  lw   t0, 0(sp)\n");//pop
+        printf("  addi sp, sp, 4\n");
+        printf("  lw   t1, 0(sp)\n");//pop
+        printf("  addi sp, sp, 4\n");
+
+        printf("  or   t0, t0, t1\n");
+
+        printf("  sw   t0, -4(sp)\n");//push
+        printf("  addi sp, sp, -4\n");
+        $$ = $1;
+    }
+    ;
+
+bit_xor_expr: //kk
+    bit_and_expr { $$ = $1; }
+    | bit_xor_expr '^' bit_and_expr {
+        printf("  lw   t0, 0(sp)\n");//pop
+        printf("  addi sp, sp, 4\n");
+        printf("  lw   t1, 0(sp)\n");//pop
+        printf("  addi sp, sp, 4\n");
+
+        printf("  xor  t0, t0, t1\n");
+
+        printf("  sw   t0, -4(sp)\n");//push
+        printf("  addi sp, sp, -4\n");
+        $$ = $1;
+    }
+    ;
+
+bit_and_expr: //kk
+    equal_expr { $$ = $1; }
+    | bit_and_expr '&' equal_expr {
+        printf("  lw   t0, 0(sp)\n");//pop
+        printf("  addi sp, sp, 4\n");
+        printf("  lw   t1, 0(sp)\n");//pop
+        printf("  addi sp, sp, 4\n");
+
+        printf("  and  t0, t0, t1\n");
+
+        printf("  sw   t0, -4(sp)\n");//push
+        printf("  addi sp, sp, -4\n");
+        $$ = $1;
+    }
+    ;
+
+equal_expr:
+    relation_expr { $$ = $1; }
+    | equal_expr EQ_OP relation_expr {
+        printf("  lw   t0, 0(sp)\n");
+        printf("  addi sp, sp, 4\n");
+        printf("  lw   t1, 0(sp)\n");
+        printf("  addi sp, sp, 4\n");
+        printf("  beq  t0, t1, .trueLB_%d\n", true_false_lb);
+        printf("  j    .falseLB_%d\n", true_false_lb);
+        printf(".trueLB_%d:\n", true_false_lb);
+        printf("  addi sp, sp, -4\n");
+        printf("  li   t0, 1\n");
+        printf("  sw   t0, 0(sp)\n");
+        printf("  j    .tfLB_exit_%d\n", true_false_lb);
+        printf(".falseLB_%d:\n", true_false_lb);
+        printf("  addi sp, sp, -4\n");
+        printf("  li   t0, 0\n");
+        printf("  sw   t0, 0(sp)\n");
+        printf(".tfLB_exit_%d:\n", true_false_lb);
+        true_false_lb++;
+    }
+    | equal_expr NE_OP relation_expr {
+        printf("  lw   t0, 0(sp)\n");
+        printf("  addi sp, sp, 4\n");
+        printf("  lw   t1, 0(sp)\n");
+        printf("  addi sp, sp, 4\n");
+        printf("  bne  t0, t1, .trueLB_%d\n", true_false_lb);
+        printf("  j    .falseLB_%d\n", true_false_lb);
+        printf(".trueLB_%d:\n", true_false_lb);
+        printf("  addi sp, sp, -4\n");
+        printf("  li   t0, 1\n");
+        printf("  sw   t0, 0(sp)\n");
+        printf("  j    .tfLB_exit_%d\n", true_false_lb);
+        printf(".falseLB_%d:\n", true_false_lb);
+        printf("  addi sp, sp, -4\n");
+        printf("  li   t0, 0\n");
+        printf("  sw   t0, 0(sp)\n");
+        printf(".tfLB_exit_%d:\n", true_false_lb);
+        true_false_lb++;
+    }
+    ; 
+
+relation_expr:
+    add_sub { $$ = $1; }
+    /* | relation_expr LE_OP add_sub {
+        printf("  lw   t1, 0(sp)\n");
+        printf("  addi sp, sp, 4\n");
+        printf("  lw   t0, 0(sp)\n");
+        printf("  addi sp, sp, 4\n");
+        printf("  bgt  t0, t1, .falseLB_%d\n", true_false_lb);
+        printf("  j    .trueLB_%d\n", true_false_lb);
+        printf(".trueLB_%d:\n", true_false_lb);
+        printf("  addi sp, sp, -4\n");
+        printf("  li   t0, 1\n");
+        printf("  sw   t0, 0(sp)\n");
+        printf("  j    .tfLB_exit_%d\n", true_false_lb);
+        printf(".falseLB_%d:\n", true_false_lb);
+        printf("  addi sp, sp, -4\n");
+        printf("  li   t0, 0\n");
+        printf("  sw   t0, 0(sp)\n");
+        printf(".tfLB_exit_%d:\n", true_false_lb);
+        true_false_lb++;
+    }
+    | relation_expr GE_OP add_sub {
+        printf("  lw   t1, 0(sp)\n");
+        printf("  addi sp, sp, 4\n");
+        printf("  lw   t0, 0(sp)\n");
+        printf("  addi sp, sp, 4\n");
+        printf("  blt  t0, t1, .falseLB_%d\n", true_false_lb);
+        printf("  j    .trueLB_%d\n", true_false_lb);
+        printf(".trueLB_%d:\n", true_false_lb);
+        printf("  addi sp, sp, -4\n");
+        printf("  li   t0, 1\n");
+        printf("  sw   t0, 0(sp)\n");
+        printf("  j    .tfLB_exit_%d\n", true_false_lb);
+        printf(".falseLB_%d:\n", true_false_lb);
+        printf("  addi sp, sp, -4\n");
+        printf("  li   t0, 0\n");
+        printf("  sw   t0, 0(sp)\n");
+        printf(".tfLB_exit_%d:\n", true_false_lb);
+        true_false_lb++;
+    }
+    | relation_expr '<' add_sub {
+        printf("  lw   t1, 0(sp)\n");
+        printf("  addi sp, sp, 4\n");
+        printf("  lw   t0, 0(sp)\n");
+        printf("  addi sp, sp, 4\n");
+        printf("  blt  t0, t1, .trueLB_%d\n", true_false_lb);
+        printf("  j    .falseLB_%d\n", true_false_lb);
+        printf(".trueLB_%d:\n", true_false_lb);
+        printf("  addi sp, sp, -4\n");
+        printf("  li   t0, 1\n");
+        printf("  sw   t0, 0(sp)\n");
+        printf("  j    .tfLB_exit_%d\n", true_false_lb);
+        printf(".falseLB_%d:\n", true_false_lb);
+        printf("  addi sp, sp, -4\n");
+        printf("  li   t0, 0\n");
+        printf("  sw   t0, 0(sp)\n");
+        printf(".tfLB_exit_%d:\n", true_false_lb);
+        true_false_lb++;
+    }
+    | relation_expr '>' add_sub {
+        printf("  lw   t1, 0(sp)\n");
+        printf("  addi sp, sp, 4\n");
+        printf("  lw   t0, 0(sp)\n");
+        printf("  addi sp, sp, 4\n");
+        printf("  bgt  t0, t1, .trueLB_%d\n", true_false_lb);
+        printf("  j    .falseLB_%d\n", true_false_lb);
+        printf(".trueLB_%d:\n", true_false_lb);
+        printf("  addi sp, sp, -4\n");
+        printf("  li   t0, 1\n");
+        printf("  sw   t0, 0(sp)\n");
+        printf("  j    .tfLB_exit_%d\n", true_false_lb);
+        printf(".falseLB_%d:\n", true_false_lb);
+        printf("  addi sp, sp, -4\n");
+        printf("  li   t0, 0\n");
+        printf("  sw   t0, 0(sp)\n");
+        printf(".tfLB_exit_%d:\n", true_false_lb);
+        true_false_lb++;
+    } */
+    ;
+
+add_sub:
+    mul_div { $$ = $1; }
+    | add_sub '+' mul_div {
+        
+        printf("  lw   t1, 0(sp)\n");//pop back
+        printf("  addi sp, sp, 4\n");
+
+        printf("  lw   t0, 0(sp)\n");//pop add_sub
+        printf("  addi sp, sp, 4\n");
+
+        // if (strcmp($1->type, "address") == 0) {
+        //     printf("  slli t1, t1, 2\n");//add*4 bytes
+        //     printf("  sub  t0, t0, t1\n");
+        // }
+        // else
+        printf("  add  t0, t0, t1\n");
+        
+        
+        printf("  sw   t0, -4(sp)\n");//push
+        printf("  addi sp, sp, -4\n");
+        $$ = $1;
+    }
+    | add_sub '-' mul_div {
+        
+        printf("  lw   t1, 0(sp)\n");//pop md
+        printf("  addi sp, sp, 4\n");
+        printf("  lw   t0, 0(sp)\n");//pop as
+        printf("  addi sp, sp, 4\n");
+
+        // if (strcmp($1->type, "address") == 0) {
+        //     printf("  slli t1, t1, 2\n");
+        //     printf("  add  t0, t0, t1\n");
+        // }
+        // else 
+            printf("  sub  t0, t0, t1\n");
+    
+        
+        
+        printf("  sw   t0, -4(sp)\n");//push
+        printf("  addi sp, sp, -4\n");
+        $$ = $1;
+    }
+    ;
+
+mul_div:
+    unary_expr { $$ = $1; }
+    | mul_div '*' unary_expr  {
+        printf("  lw   t1, 0(sp)\n");//pop
+        printf("  addi sp, sp, 4\n");
+
+        printf("  lw   t0, 0(sp)\n");//pop
+        printf("  addi sp, sp, 4\n");
+
+        printf("  mul  t0, t0, t1\n");
+
+        printf("  sw   t0, -4(sp)\n");//push
+        printf("  addi sp, sp, -4\n");
+        $$ = $1;
+    }
+    | mul_div '/' unary_expr  {
+        printf("  lw   t1, 0(sp)\n");//pop unary
+        printf("  addi sp, sp, 4\n");
+
+        printf("  lw   t0, 0(sp)\n");//pop div
+        printf("  addi sp, sp, 4\n");
+
+        printf("  div  t0, t0, t1\n");
+
+        printf("  sw   t0, -4(sp)\n");//push
+        printf("  addi sp, sp, -4\n");
+        $$ = $1;
+    }
+    ;
+
+unary_expr:
+    arr_funcall %prec signel_grammer { $$ = $1; }
+    | '*' unary_expr {
+        printf("  lw   t0, 0(sp)\n");//addr
+        printf("  addi sp, sp, 4\n");
+        printf("  lw   t0, 0(t0)\n");//addr's value
+        printf("  sw   t0, -4(sp)\n");//push addr's val
+        printf("  addi sp, sp, -4\n");
+        $2->type = "ref";
+        $$ = $2;
+    }
+    | '&' unary_expr {
+        printf("  addi sp, sp, 4\n");//dont need
+        int idx = look_table($2->sval);
+        printf("  addi t0, s0, -%d\n", table[idx].offset);//get its addr to t0
+        
+        printf("  sw   t0, -4(sp)\n");//push address to stack
+        printf("  addi sp, sp, -4\n");
+        $$ = $2;
+    }
+    | '+' unary_expr {
+        $$ = $2;
+    }
+    | '-' unary_expr {
+        printf("  addi sp, sp, 4\n");//dont need
+
+        printf("  li   t1, 0\n");
+        printf("  lw   t0, 0(sp)\n"); //u_exp to t0
+        printf("  sub  t0, t1, t0\n");//-u_exp
+
+        printf("  sw   t0, -4(sp)\n");//push -u_exp to stack
+        printf("  addi sp, sp, -4\n");
+        $$ = $2;
+    }
+    ;
+
+arr_funcall:
+    int_id_c %prec signel_grammer { $$ = $1; }//慘
+    | IDENT '[' expr ']' {
+        printf("  lw   t1, 0(sp)\n");//expr
+        printf("  slli t1, t1, 2\n");//數組*4 byte
+        printf("  addi sp, sp, 4\n");
+
+        struct node *cur = create_node("STRING", 0);
+        cur->sval = $1;
+
+        int idx = look_table($1);
+        if (table[idx].mode == ARY) {
+            cur->type = "ary";
+            
+            printf("  addi t0, s0, -%d\n", table[idx].offset); //array之address
+            printf("  sw   t0, -4(sp)\n"); //push t0
+            printf("  addi sp, sp, -4\n");
+
+            printf("  lw   t0, 0(sp)\n");
+            printf("  addi sp, sp, 4\n");
+            printf("  sub  t0, t0, t1\n");
+            printf("  lw   t0, 0(t0)\n");
+            
+            printf("  sw   t0, -4(sp)\n");//push t0
+            printf("  addi sp, sp, -4\n");
+        }
+        else {//慘
+            
+            printf("  lw   t0, -%d(s0)\n", table[idx].offset); //address中value
+            printf("  sw   t0, -4(sp)\n");//push t0
+            printf("  addi sp, sp, -4\n");
+
+            printf("  lw   t0, 0(sp)\n");
+            printf("  addi sp, sp, 4\n");
+            printf("  sub  t0, t0, t1\n");
+            printf("  lw   t0, 0(t0)\n");
+            
+            printf("  sw   t0, -4(sp)\n");//push t0
+            printf("  addi sp, sp, -4\n");
+        }
+        
+
+        $$ = cur;
+    }
+    | IDENT '('  ')' {  //func_call
+        printf("  sw ra, -4(sp)\n");//ra save
+        printf("  addi sp, sp, -4\n");
+
+        printf("  jal  ra, %s\n", $1);
+
+        printf("  lw ra, 0(sp)\n");//ra recall
+        printf("  addi sp, sp, 4\n");
+
+        int idx = look_table($1);
+        if(table[idx].isreturn > 0) {//是否有返回值
+            printf("  sw   a0, -4(sp)\n"); //return value
+            printf("  addi sp, sp, -4\n");
+        }
+
+        struct node *cur = create_node("STRING", 0);
+        cur->sval = $1;
+        $$ = cur;
+    }
+    | IDENT '(' expr_parameter_list ')'{    // function(int a, int b)
+        int idx = look_table($1);
+        for(int i = table[idx].total_args-1; i >= 0; i--) {//save args
+            printf("  lw a%d, 0(sp)\n", i);
+            printf("  addi sp, sp, 4\n");
+        }
+        
+        printf("  sw ra, -4(sp)\n");//ra save
+        printf("  addi sp, sp, -4\n");
+        
+        printf("  jal ra, %s\n", $1);//jmp
+        
+        printf("  lw ra, 0(sp)\n");//ra recall
+        printf("  addi sp, sp, 4\n");
+        
+        if(table[idx].isreturn > 0) {
+            printf("  sw   a0, -4(sp)\n"); //return value
+            printf("  addi sp, sp, -4\n");
+        }
+        struct node *cur = create_node("STRING", 0);
+        cur->sval = $1;
+        $$ = cur;
+    }
+    ;
+expr_parameter_list: //慘
+    expr { $$ = $1; }
+    | expr_parameter_list ',' expr 
+    ;
+
+
+int_id_c:
+    INTEGER         { //kk
+                        struct node *cur = create_node("INTEGER", 0);
+                        cur->ival = $1;
+                        printf("  li   t0, %d\n", cur->ival);
+                        printf("  sw   t0, -4(sp)\n");
+                        printf("  addi sp, sp, -4\n");
+                        $$ = cur;
+                    }
+    | IDENT         {
+                        struct node *cur = create_node("STRING", 0);
+                        cur->sval = $1;
+                        int idx = look_table($1);
+                        if (table[idx].mode == ARY) { //kk
+                            printf("  addi t0, s0, -%d\n", table[idx].offset);
+                            printf("  sw   t0, -4(sp)\n");
+                            printf("  addi sp, sp, -4\n");
+                        }
+                        else {//kk
+                            printf("  lw   t0, -%d(s0)\n", table[idx].offset);
+                            printf("  sw   t0, -4(sp)\n");
+                            printf("  addi sp, sp, -4\n");
+                        }
+
+                        if (table[idx].mode == ARY || table[idx].mode == PTR)
+                            cur->type = "address"; //s0's
+                        
+
+                        $$ = cur;
+                    }
+    | '(' expr ')'  { //慘
+                        struct node *cur = create_node("STRING", 2);
+                        cur->sval = strdup("(");
+                        struct node *nxt = create_node("STRING", 0);
+                        nxt->sval = strdup(")");
+                        cur->grammer_list[0] = $2;
+                        cur->grammer_list[1] = nxt;
+                        $$ = cur;
+                    }
+    ;
+
+%%
+
+struct node* create_node(char* type, int list_len){
+    struct node *cur = (struct node*)malloc(sizeof(struct node));
+    cur->list_len = list_len;
+
+    if (type != NULL)
+        cur->type = strdup(type);
+    else cur->type = NULL;
+
+    if (list_len != 0)
+        cur->grammer_list = (struct node**)malloc(list_len*sizeof(struct node*));
+    else cur->grammer_list = NULL;
+
+    return cur;
+}
+struct node* create_string_node(char* content){
+    struct node* cur = create_node("STRING", 0);
+    cur->sval = strdup(content);
+    return cur;
+}
+void decl_settype(struct node* cur, int mode){
+    if (cur->list_len == 0) {
+        int idx = look_table(cur->sval);
+        table[idx].mode = mode;
+        return;
+    }
+    for(int i = 0; i < cur->list_len; i++) {
+        decl_settype(cur->grammer_list[i], mode);
+    }
+}
+
+int look_table(char *name) {
+    for(int i = symbol_num-1; i >= 0; i--) {
+        if(strcmp(table[i].name, name) == 0) {
+            return i;
+        }
+    }
+    return -1; //沒找到
+}
+int look_table_check_scope(char *name, int scope) {
+    for(int i = symbol_num-1; i >= 0; i--) {
+        if(strcmp(table[i].name, name) == 0 && table[i].scope == scope) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void remove_from_symbol_table(int scope) {  // 最大的scope全部拿掉
+    while (symbol_num >= 0) {
+        if (table[symbol_num-1].scope < scope)
+            break;
+        symbol_num--;
+    }
+}
+void symbol_insert_var(char *name, int scope, int mode) {
+    table[symbol_num].name = name;
+    table[symbol_num].scope = scope;
+    table[symbol_num].mode = mode;
+    table[symbol_num].loaded_args = 0;
+
+    table[symbol_num].isreturn = -1;
+    table[symbol_num].total_args = -1;
+    table[symbol_num].total_locals = -1;
+    table[symbol_num].total_saved = -1;
+
+    if (cur_func < 0) {
+        symbol_num++;
+        return;
+    }
+
+    if (mode == VAR || mode == ARY) {
+        int offset = table[cur_func].total_locals*4 + table[cur_func].total_saved*4 + table[cur_func].total_args*4 + 4;
+        table[symbol_num].offset = offset;
+        table[cur_func].total_locals++;
+    }
+    else if (mode == ARG) {
+        int offset = table[cur_func].total_saved*4 + table[cur_func].loaded_args*4 + 4;
+        table[symbol_num].offset = offset;
+        table[cur_func].loaded_args++;
+    }
+
+    symbol_num++;
+}
+void symbol_change_func(int idx, int scope, int total_args, int total_saved) {
+    table[idx].mode = FUNC;
+    table[idx].total_args = total_args;
+    table[idx].total_locals = 0;
+    table[idx].total_saved = total_saved;
+}
+void symbol_insert_func(char *name, int scope, int total_args, int total_saved) {
+    table[symbol_num].offset = -1;
+    table[symbol_num].isreturn = -1;
+    table[symbol_num].loaded_args = 0;
+
+    table[symbol_num].name = name;
+    table[symbol_num].scope = scope;
+    table[symbol_num].mode = FUNC;
+    table[symbol_num].total_args = total_args;
+    table[symbol_num].total_locals = 0;
+    table[symbol_num].total_saved = total_saved;
+
+    symbol_num++;
+}
+
+void parser_initialize() {
+    //一定有哈
+    symbol_insert_func("digitalWrite", 0, 2, 0);
+    symbol_insert_func("delay", 0, 1, 0);
+}
+
+int yyerror(char *s){
+    fprintf(stderr, "%s\n", s);
+    return 0;
+}
+
+int main(){
+    parser_initialize();
+    yyparse();
+    return 0;
+}
